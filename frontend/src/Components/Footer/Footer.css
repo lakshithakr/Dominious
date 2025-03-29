@@ -1,0 +1,22 @@
+/* Footer container */
+.footer {
+    background-color: #120707; /* Dark background */
+    color: white;
+    text-align: center;
+    padding: 10px 0;
+    font-size: 14px;
+    margin-top: 50px;
+  }
+  
+  /* Links */
+  .footer a {
+    color: white;
+    text-decoration: none;
+    margin: 0 5px;
+    transition: color 0.3s ease;
+  }
+  
+  /* Hover effect */
+  .footer a:hover {
+    color: #ffb6c1; /* Light pink on hover */
+  }
