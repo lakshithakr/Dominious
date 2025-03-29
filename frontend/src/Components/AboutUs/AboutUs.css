@@ -1,0 +1,48 @@
+.aboutus {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 20px;
+    max-width: 1200px;
+    margin: auto;
+  }
+  
+  .aboutus-content {
+    flex: 1;
+  }
+  
+  .aboutus-content h2 {
+    font-size: 24px;
+    font-weight: bold;
+  }
+  
+  .aboutus-content p {
+    font-size: 16px;
+    line-height: 1.6;
+    color: #333;
+  }
+  
+  .aboutus-content a {
+    color: #0047ab;
+    text-decoration: none;
+  }
+  
+  .aboutus-content a:hover {
+    text-decoration: underline;
+  }
+  
+  .aboutus-image {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+  }
+  
+  .aboutus-image img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 10px;
+    object-fit: cover;   /* Ensures the images cover the container */
+    max-height: 400px;   /* Keeps the images within a consistent size */
+    width: 100%;         /* Ensures both images are the same width */
+  }

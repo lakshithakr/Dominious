@@ -7,14 +7,18 @@ import Description from './Components/Description/Description';
 import DomainSearch from './Components/DomainSearch/DomainSearch';
 import DomainCard from './Components/DomainCard/DomainCard';
 import DomainList from './Components/DomainList/DomainList';
+import AboutUs from './Components/AboutUs/AboutUs';
+import Help from './Components/Help/Help';
 function App() {
   return (
     <>
     <NavBar/>
-    <DomainSearch/>
+    <Help/>
+    {/* <AboutUs/> */}
+    {/* <DomainSearch/> */}
     {/* <About/> */}
     {/* <Description/> */}
-    <DomainList/>
+    {/* <DomainList/> */}
     <Footer/>
     </>
   );
