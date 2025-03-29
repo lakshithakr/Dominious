@@ -1,0 +1,37 @@
+.navbar {
+    background-color: #132361; /* Dark blue background */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+  }
+
+
+.navbar-brand {
+    color: white;
+    font-weight:bolder;
+    font-size: 30px;
+    margin-left: 20px;
+}
+
+.navbar-links {
+    list-style: none;
+    display: flex;
+    gap: 20px;
+    margin: 0;
+    padding: 0;
+    margin-right: 20px;
+  }
+
+.navbar-links li a {
+    color: white;
+    text-decoration: none;
+    font-size: 16px;
+    transition: color 0.3s ease;
+    font-weight: bold;
+}
+
+
+.navbar-links li a:hover {
+    color: #ffb6c1; /* Light pink on hover */
+  }
