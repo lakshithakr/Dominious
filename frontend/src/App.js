@@ -9,11 +9,13 @@ import DomainCard from './Components/DomainCard/DomainCard';
 import DomainList from './Components/DomainList/DomainList';
 import AboutUs from './Components/AboutUs/AboutUs';
 import Help from './Components/Help/Help';
+import ContactUs from './Components/ContactUs/ContactUs';
 function App() {
   return (
     <>
     <NavBar/>
-    <Help/>
+    {/* <Help/> */}
+    <ContactUs/>
     {/* <AboutUs/> */}
     {/* <DomainSearch/> */}
     {/* <About/> */}
