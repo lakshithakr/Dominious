@@ -13,7 +13,8 @@ const DomainSearch = () => {
           placeholder="Describe your domain here"
           className="search-input"
         />
-        <button className="search-button">Search</button>
+        <a href='/domains'><button className="search-button">Search</button></a>
+        {/* <button className="search-button">Search</button> */}
       </div>
     </div>
   </div>
