@@ -1,0 +1,124 @@
+.domain-details {
+    max-width: 1200px;
+    margin: 0 auto;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #333;
+    padding: 20px;
+  }
+  
+  .domain-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #132361;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 30px;
+  }
+  
+  .section-heading {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #3498db;
+    margin-bottom: 1.5rem;
+    position: relative;
+    padding-bottom: 0.5rem;
+  }
+  
+  .section-heading::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 60px;
+    height: 3px;
+    background-color: #3498db;
+  }
+  
+  .fields-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  
+  .field-badge {
+    display: inline-block;
+    padding: 8px 15px;
+    background-color: #f8f9fa;
+    border-radius: 20px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+  
+  .field-badge:hover {
+    background-color: #e9ecef;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  }
+  
+  .domain-description {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: #555;
+    text-align: justify;
+  }
+  
+  .section-divider {
+    border-top: 2px solid #eee;
+    margin: 30px 0;
+  }
+  
+  .domain-link-btn {
+    padding: 12px 30px;
+    font-size: 1.1rem;
+    font-weight: 500;
+    border-radius: 30px;
+    background-color: #3498db;
+    border: none;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  
+  .domain-link-btn:hover {
+    background-color: #2980b9;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 992px) {
+    .domain-title {
+      font-size: 2.2rem;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .domain-title {
+      font-size: 1.8rem;
+    }
+    
+    .section-heading {
+      font-size: 1.5rem;
+    }
+    
+    .field-badge {
+      width: 100%;
+      text-align: center;
+    }
+  }
+  
+  @media (max-width: 576px) {
+    .domain-title {
+      font-size: 1.5rem;
+    }
+    
+    .domain-description {
+      font-size: 1rem;
+    }
+    
+    .domain-link-btn {
+      padding: 10px 20px;
+      font-size: 1rem;
+    }
+  }
