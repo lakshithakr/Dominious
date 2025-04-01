@@ -46,3 +46,21 @@
     max-height: 400px;   /* Keeps the images within a consistent size */
     width: 100%;         /* Ensures both images are the same width */
   }
+
+
+  @media (max-width:1000px) {
+    .description{
+        flex-direction: column;
+    }
+    .description-content p {
+      font-size: 12px;
+    }
+    .description-image img {
+      max-width: 90%;
+      height: auto;
+      border-radius: 10px;
+      object-fit: cover;   /* Ensures the images cover the container */
+      max-height: 400px;   /* Keeps the images within a consistent size */
+      width: 90%;         /* Ensures both images are the same width */
+    }
+}

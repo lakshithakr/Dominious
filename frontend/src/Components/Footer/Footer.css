@@ -20,3 +20,9 @@
   .footer a:hover {
     color: #ffb6c1; /* Light pink on hover */
   }
+
+  @media (max-width:1000px) {
+    .footer{
+        font-size: 8px;
+    }
+}

@@ -1,6 +1,4 @@
-.contact-container {
-    padding: 40px 0;
-  }
+
   
   .section-title {
     font-size: 2.2rem;
@@ -69,5 +67,16 @@
     .icon-wrapper {
       margin-right: 0;
       margin-bottom: 15px;
+    }
+    .section-title {
+      font-size: 1.6rem;
+    }
+    .contact-text {
+      font-size: 0.8rem;
+    }
+    .contact-image {
+      margin-top: 20px;
+      max-width: 80%;
+
     }
   }

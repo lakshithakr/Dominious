@@ -46,3 +46,18 @@
     max-height: 400px;   /* Keeps the images within a consistent size */
     width: 100%;         /* Ensures both images are the same width */
   }
+
+  @media (max-width:1000px) {
+    .aboutus{
+        flex-direction: column;
+    }
+    .aboutus-content h2 {
+      font-size: 20px;
+    }
+    
+    .aboutus-content p {
+      font-size: 12px;
+
+    }
+    
+}
