@@ -24,7 +24,8 @@ const DomiandetailsPage = () => {
     <div>
         <NavBar/>
         <DomainSearch/>
-        <DomainDetails data={domain_details}/>
+        <About/>
+        <Description/>
         <Footer/>
     </div>
   )
