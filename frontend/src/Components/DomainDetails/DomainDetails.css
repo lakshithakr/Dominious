@@ -87,19 +87,22 @@
   }
 
   /* Responsive adjustments */
-  @media (max-width: 992px) {
+  @media (max-width: 1000px) {
     .domain-title {
-      font-size: 2.2rem;
+      font-size: 1.8rem;
+    }
+    .domain-description {
+      font-size: 1rem;
     }
   }
   
   @media (max-width: 768px) {
     .domain-title {
-      font-size: 1.8rem;
+      font-size: 1.6rem;
     }
     
     .section-heading {
-      font-size: 1.5rem;
+      font-size: 1.4rem;
     }
     
     .field-badge {
@@ -120,5 +123,16 @@
     .domain-link-btn {
       padding: 10px 20px;
       font-size: 1rem;
+    }
+    .domain-description {
+      font-size: 0.8rem;
+    }
+    .domain-link-btn {
+      font-size: 0.8rem;
+
+    }
+    .field-badge {
+      font-size: 0.8rem;
+
     }
   }

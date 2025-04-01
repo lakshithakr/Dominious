@@ -25,8 +25,8 @@ const DomiandetailsPage = () => {
     <div>
         <MobileNavbar/>
         <NavBar/>
-        <DomainSearch/>
-        <DomainDetails/>
+        <DomainSearch />
+        <DomainDetails data={domain_details}/>
         <Footer/>
     </div>
   )
