@@ -35,3 +35,10 @@
 .navbar-links li a:hover {
     color: #ffb6c1; /* Light pink on hover */
   }
+
+
+@media (max-width:1000px) {
+    .navbar{
+        display: none;
+    }
+}

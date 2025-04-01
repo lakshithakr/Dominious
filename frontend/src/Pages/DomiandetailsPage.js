@@ -3,6 +3,7 @@ import NavBar from '../Components/NavBar/NavBar'
 import Footer from '../Components/Footer/Footer'
 import DomainSearch from '../Components/DomainSearch/DomainSearch'
 import DomainDetails from '../Components/DomainDetails/DomainDetails'
+import MobileNavbar from '../Components/MobileNavbar/MobileNavbar'
 
 const domain_details = {
     domainName: "FinanceFly.lk",
@@ -22,10 +23,10 @@ const domain_details = {
 const DomiandetailsPage = () => {
   return (
     <div>
+        <MobileNavbar/>
         <NavBar/>
         <DomainSearch/>
-        <About/>
-        <Description/>
+        <DomainDetails/>
         <Footer/>
     </div>
   )
