@@ -7,7 +7,6 @@ import DomiandetailsPage from './Pages/DomiandetailsPage';
 import HelpPage from './Pages/HelpPage';
 import AboutusPage from './Pages/AboutusPage';
 import ContactPage from './Pages/ContactPage';
-import MobileNavbar from './Components/MobileNavbar/MobileNavbar';
 
 function App() {
   return (
