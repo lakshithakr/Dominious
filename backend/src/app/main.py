@@ -30,7 +30,7 @@ async def generate_domains_endpoint(prompt: Prompt):
 
 @app.post("/details/")
 async def get_domain_details(request: DetailRequest):
-    return domain_details(request.domain_name)
+    return domain_details(request.domain_name,request.prompt)
 
 if __name__ == "__main__":
     import uvicorn
