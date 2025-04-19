@@ -18,6 +18,10 @@ app.add_middleware(
 class Prompt(BaseModel):
     prompt: str
 
+class DetailRequest(BaseModel):
+    prompt: str
+    domain_name: str
+
 @app.post("/generate-domains/")
 async def generate_domains_endpoint(prompt: Prompt):
     domains = generate_domains(prompt.prompt)
@@ -25,8 +29,8 @@ async def generate_domains_endpoint(prompt: Prompt):
     return {"domains": domain_names}
 
 @app.post("/details/")
-async def get_domain_details():
-    return domain_details()
+async def get_domain_details(request: DetailRequest):
+    return domain_details(request.domain_name)
 
 if __name__ == "__main__":
     import uvicorn

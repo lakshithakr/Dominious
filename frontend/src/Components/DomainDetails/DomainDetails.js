@@ -1,3 +1,5 @@
+// src/components/DomainDetails.js
+
 import React, { useEffect, useState } from 'react';
 import './DomainDetails.css';
 
@@ -5,8 +7,15 @@ const DomainDetails = () => {
   const [domainDetails, setDomainDetails] = useState(null);
 
   useEffect(() => {
+    const prompt = sessionStorage.getItem("userPrompt");
+    const domainName = sessionStorage.getItem("selectedDomain");
+
     fetch("http://127.0.0.1:8000/details/", {
-      method: "POST"
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ prompt, domain_name: domainName })
     })
       .then((res) => res.json())
       .then((data) => {
@@ -46,7 +55,7 @@ const DomainDetails = () => {
 
           <div className="domain-cta mt-4 text-center">
             <a 
-              href='#' 
+              href='https://domains.lk' 
               className="btn btn-primary domain-link-btn"
               target="_blank"
               rel="noopener noreferrer"
