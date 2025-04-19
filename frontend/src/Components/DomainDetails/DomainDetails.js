@@ -35,11 +35,9 @@ const DomainDetails = () => {
 
           <div className="about-domain">
             <h2 className="section-heading mb-3">About {domainDetails.domainName}</h2>
-            {domainDetails.domainDescription.map((paragraph, index) => (
-              <p key={index} className="domain-description mb-3">
-                {paragraph}
-              </p>
-            ))}
+            <p className="domain-description mb-3">
+                {domainDetails.domainDescription}
+            </p>
           </div>
 
           <div className="related-fields mb-5">
@@ -55,7 +53,7 @@ const DomainDetails = () => {
 
           <div className="domain-cta mt-4 text-center">
             <a 
-              href='https://domains.lk' 
+              href='#' 
               className="btn btn-primary domain-link-btn"
               target="_blank"
               rel="noopener noreferrer"

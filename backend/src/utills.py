@@ -28,12 +28,11 @@ def final_domains():
 def domain_details(domain_name:str,prompt:str):
     return {
         'domainName': domain_name+'.lk',
-        'domainDescription': [
-            prompt,
-            "FinanceFly is a dynamic and innovative financial management platform designed to help individuals and businesses take control of their financial future.",
-            "The name combines 'Finance' with 'Fly,' symbolizing the ability to elevate financial operations to new heights with speed and precision. Whether it's streamlining daily budgeting, tracking expenses, or making informed investment decisions, FinanceFly aims to provide users with a seamless and intuitive experience.",
+        'domainDescription': 
+            "FinanceFly is a dynamic and innovative financial management platform designed to help individuals and businesses take control of their financial future."
+            "The name combines 'Finance' with 'Fly,' symbolizing the ability to elevate financial operations to new heights with speed and precision. Whether it's streamlining daily budgeting, tracking expenses, or making informed investment decisions, FinanceFly aims to provide users with a seamless and intuitive experience."
             "With a focus on user-friendly design and cutting-edge technology, FinanceFly empowers users to make smarter financial choices, optimize their wealth, and achieve their goals faster."
-        ],
+        ,
         'relatedFields': [
             "Personal Finance Management",
             "Budgeting Tools",
