@@ -24,3 +24,35 @@ button {
     background-color: darkorange;
 }
 
+.loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f8f9fa; /* light gray background */
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .spinner {
+    border: 6px solid #e0e0e0; /* Light grey */
+    border-top: 6px solid #007bff; /* Bootstrap blue */
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 20px;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  .loading-text {
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: #333;
+    letter-spacing: 0.5px;
+  }
+

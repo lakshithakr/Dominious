@@ -12,24 +12,19 @@ llm = OpenAI(api_key=api_key,temperature=0.7)
 def preprocess():
     pass
 
-def generate_domains(prompt):
-    return '''Input:
-Looking for a unique domain name for financial management tool? 
+def generate_domains(prompt: str) -> str:
+    instruction = (
+        "You are a domain name generator. Based on the user's prompt, generate 10 creative, relevant, and unique domain name ideas "
+        "WITHOUT any domain extensions like .com, .net, .io, etc. Just the names only. Present them in a numbered list."
+        "Short Domain names are better, Do not combine more than two words for a domain name."
+    )
 
-Response:
-
-1. FinanceFly.com
-2. MoneyMind.net
-3. WealthWise.org
-4. CashClever.io
-5. EconoSavvy.com
-6. FiscalFriend.net
-7. ProsperityPath.org
-8. InvestInsight.io
-9. BudgetBoss.com
-10. CashCraft.net'''
+    full_prompt = f"{instruction}\n\nInput:\n{prompt}\n\nResponse:\n"
+    
+    response = llm(full_prompt)
+    return response
 def postprocessing(text):
-    domain_names = re.findall(r'\d+\.\s+([a-zA-Z0-9]+)\.[a-z]+', text)
+    domain_names = re.findall(r'\d+\.\s+([a-zA-Z0-9]+)', text)
     return domain_names
 def final_domains():
     pass

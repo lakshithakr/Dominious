@@ -25,7 +25,9 @@ class DetailRequest(BaseModel):
 @app.post("/generate-domains/")
 async def generate_domains_endpoint(prompt: Prompt):
     domains = generate_domains(prompt.prompt)
+    #print(domains)
     domain_names = postprocessing(domains)
+    #print(domain_names)
     return {"domains": domain_names}
 
 @app.post("/details/")

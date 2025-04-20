@@ -23,7 +23,14 @@ const DomainDetails = () => {
       });
   }, []);
 
-  if (!domainDetails) return <p>Loading...</p>;
+  if (!domainDetails) {
+    return (
+      <div className="loading-container">
+        <div className="spinner"></div>
+        <p className="loading-text">Fetching domain insights...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="domain-details container py-5">

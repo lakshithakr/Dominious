@@ -18,7 +18,7 @@ import "./DomainList.css"; // Styling file
   const DomainList = () => {
     const [domainNames, setDomainNames] = useState([]);
     const [visibleDomains, setVisibleDomains] = useState(4);
-  
+    const [loading, setLoading] = useState(true);
     const handleLoadMore = () => {
       setVisibleDomains((prev) => prev + 4);
     };
@@ -37,13 +37,23 @@ import "./DomainList.css"; // Styling file
   
           const data = await response.json();
           setDomainNames(data.domains);
+          setLoading(false);
         } catch (error) {
           console.error("Error fetching domains:", error);
+          setLoading(false);
         }
       };
   
       fetchDomains();
     }, []);
+    if (loading){
+      return (
+        <div className="loading-container">
+          <div className="spinner"></div>
+          <p className="loading-text">Fetching domain Names...</p>
+        </div>
+      );
+    };
     return (
       <div className="container mt-5">
         <div className="row justify-content-around">
