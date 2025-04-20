@@ -1,4 +1,12 @@
 import re
+import openai
+import os
+from dotenv import load_dotenv,find_dotenv
+from langchain.llms import OpenAI
+from langchain.chains.question_answering import load_qa_chain
+load_dotenv(find_dotenv())
+api_key=os.environ.get("OPEN_API_KEY")
+llm = OpenAI(api_key=api_key,temperature=0.7)
 
 
 def preprocess():
@@ -25,19 +33,36 @@ def postprocessing(text):
     return domain_names
 def final_domains():
     pass
-def domain_details(domain_name:str,prompt:str):
-    return {
-        'domainName': domain_name+'.lk',
-        'domainDescription': 
-            "FinanceFly is a dynamic and innovative financial management platform designed to help individuals and businesses take control of their financial future."
-            "The name combines 'Finance' with 'Fly,' symbolizing the ability to elevate financial operations to new heights with speed and precision. Whether it's streamlining daily budgeting, tracking expenses, or making informed investment decisions, FinanceFly aims to provide users with a seamless and intuitive experience."
-            "With a focus on user-friendly design and cutting-edge technology, FinanceFly empowers users to make smarter financial choices, optimize their wealth, and achieve their goals faster."
-        ,
-        'relatedFields': [
-            "Personal Finance Management",
-            "Budgeting Tools",
-            "Financial Planning & Advisory",
-            "Expense Tracking Solutions",
-            "Investment & Portfolio Management"
-        ]
-    }
+
+
+import ast
+
+def domain_details(domain_name: str, prompt: str):
+    template = f"""
+You are a branding and domain expert.Generate a Python dictionary in the following format. The description should 50-100 words and it should describe how domain name suitable for the user requirements:
+
+{{
+    "domainName": "{domain_name}.lk",
+    "domainDescription": "...",  # a creative description using the prompt
+    "relatedFields": [ ... ]     # 4 to 6 relevant fields
+}}
+
+Domain name: {domain_name}
+Prompt: {prompt}
+"""
+    
+    response_text = llm.invoke(template)  # ✅ use .invoke() instead of calling directly
+
+    #print(type(response_text))  # should be <class 'str'> if it’s a string
+
+    try:
+        result = ast.literal_eval(response_text)
+    except Exception as e:
+        result = {
+            "domainName": f"{domain_name}.lk",
+            "domainDescription": "Failed to parse response from LLM.",
+            "relatedFields": [],
+            "error": str(e)
+        }
+
+    return result  # ✅ This is a dict now
