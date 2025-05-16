@@ -35,6 +35,31 @@ index = pc.Index(index_name)
 vector_store = PineconeVectorStore(index=index, embedding=embeddings)
 
 
+def RAG(user_query):
+    results = vector_store.similarity_search(query=user_query,k=20)
+    categories = []
+    domain_names = []
+
+    for doc in results:
+        # Save the category
+        categories.append(doc.metadata['category'])
+
+        # Get the raw domain_names field
+        raw = doc.metadata['domain_names']
+
+        # Join into one string (if it's a broken list of strings)
+        combined = ' '.join(raw)
+
+        # Use regex to find words (filter out extra characters)
+        names = re.findall(r"[A-Za-z][A-Za-z0-9]+", combined)
+
+        # Append as a sublist
+        domain_names.append(names)
+
+    domain_names = [item for sublist in domain_names for item in sublist]
+    return domain_names
+
+
 def preprocess():
     pass
 

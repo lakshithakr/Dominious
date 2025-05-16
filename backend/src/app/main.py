@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from src.utills import generate_domains, postprocessing, domain_details
+from src.utills import generate_domains, postprocessing, domain_details,RAG
 
 app = FastAPI()
 
@@ -24,10 +24,11 @@ class DetailRequest(BaseModel):
 
 @app.post("/generate-domains/")
 async def generate_domains_endpoint(prompt: Prompt):
-    domains = generate_domains(prompt.prompt)
+    #domains = generate_domains(prompt.prompt)
     #print(domains)
-    domain_names = postprocessing(domains)
+    #domain_names = postprocessing(domains)
     #print(domain_names)
+    domain_names=RAG(prompt.prompt)
     return {"domains": domain_names}
 
 @app.post("/details/")
