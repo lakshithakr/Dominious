@@ -4,9 +4,35 @@ import os
 from dotenv import load_dotenv,find_dotenv
 from langchain.llms import OpenAI
 from langchain.chains.question_answering import load_qa_chain
+import time
+import os
+from pinecone import Pinecone, ServerlessSpec
+from langchain_pinecone import PineconeVectorStore
+from langchain.embeddings.openai import OpenAIEmbeddings
 load_dotenv(find_dotenv())
 api_key=os.environ.get("OPEN_API_KEY")
 llm = OpenAI(api_key=api_key,temperature=0.7)
+pine_cone_api_key=os.environ.get("PINE_CONE_API_KEY")
+
+pc = Pinecone(api_key=pine_cone_api_key)
+embeddings=OpenAIEmbeddings(openai_api_key=api_key)
+
+index_name = "dominious"  # change if desired
+
+existing_indexes = [index_info["name"] for index_info in pc.list_indexes()]
+
+if index_name not in existing_indexes:
+    pc.create_index(
+        name=index_name,
+        dimension=1536,
+        metric="cosine",
+        spec=ServerlessSpec(cloud="aws", region="us-east-1"),
+    )
+    while not pc.describe_index(index_name).status["ready"]:
+        time.sleep(1)
+
+index = pc.Index(index_name)
+vector_store = PineconeVectorStore(index=index, embedding=embeddings)
 
 
 def preprocess():
