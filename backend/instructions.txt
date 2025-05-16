@@ -1,7 +1,7 @@
 pip install -r requirements.txt
 fypenv\Scripts\activate
 uvicorn backend.src.app.main:app --reload
-
+uvicorn src.app.main:app --reload
 
 reminder--
 root.render(
