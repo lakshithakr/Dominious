@@ -99,7 +99,7 @@ def generate_domains(user_description: str, sample_domains: str) -> str:
 """
     
     response = llm(prompt)
-    print(response)
+    # print(response)
     return response
 def postprocessing(text):
     domain_names = re.findall(r'\d+\.\s+([a-zA-Z0-9]+)', text)
