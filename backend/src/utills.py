@@ -10,6 +10,7 @@ from pinecone import Pinecone, ServerlessSpec
 from langchain_pinecone import PineconeVectorStore
 from langchain.embeddings.openai import OpenAIEmbeddings
 import requests
+import json
 
 load_dotenv(find_dotenv())
 api_key=os.environ.get("OPEN_API_KEY")
@@ -170,7 +171,7 @@ def gemma(user_description: str, sample_domains: str) -> str:
         }
     }
     response = requests.post(API_URL, headers=headers, json=payload)
-    print(response.json())
+    #print(response.json())
     return response.json()
 
 def gemma_post_processing(output):
@@ -184,15 +185,15 @@ def gemma_post_processing(output):
 def gemma_decsription(domain_name: str, prompt: str):
     template = f"""
         You are a branding and domain expert.Generate a Python dictionary in the following format. The description should 50-100 words and it should describe how domain name suitable for the user requirements:
-
+        Domain name: {domain_name}
+        Prompt: {prompt}
         {{
             "domainName": "{domain_name}.lk",
             "domainDescription": "...",  # a creative description using the prompt
             "relatedFields": [ ... ]     # 4 to 6 relevant fields
         }}
 
-        Domain name: {domain_name}
-        Prompt: {prompt}
+        output:
     """
     payload = {
         "inputs": template,
@@ -204,27 +205,29 @@ def gemma_decsription(domain_name: str, prompt: str):
     }
     response = requests.post(API_URL, headers=headers, json=payload)
     llm_response=response.json()
+    return llm_response[0]['generated_text'],domain_name
 
-    print(llm_response)
+def gemma_preprocess(llm_output,domain_name):
     try:
-        # Extract the Python dictionary inside triple backticks using regex
-        match = re.search(r"```python\s*(\{.*?\})\s*```", llm_response, re.DOTALL)
-        if not match:
-            raise ValueError("No dictionary found inside triple backticks.")
+        # Try to find a code block with ```json or ```python
+        code_block_match = re.search(r'```(?:json|python)?\s*(\{[\s\S]*?\})\s*```', llm_output, re.IGNORECASE)
 
-        # Safely evaluate the extracted dictionary
-        parsed_dict = ast.literal_eval(match.group(1))
+        if code_block_match:
+            json_string = code_block_match.group(1)
+        else:
+            # Fallback: try to find the last JSON-like block in the output
+            all_matches = re.findall(r'\{[\s\S]*?\}', llm_output)
+            if not all_matches:
+                raise ValueError("No JSON object found.")
+            json_string = all_matches[-1]  # Use the last one assuming it's the actual output
 
-        # Ensure required keys exist
-        if not all(k in parsed_dict for k in ("domainName", "domainDescription", "relatedFields")):
-            raise KeyError("Missing one or more required keys in parsed dictionary.")
+        # Try to parse the JSON
+        parsed_json = json.loads(json_string)
+        return parsed_json
 
-        return parsed_dict
-
-    except Exception as e:
+    except Exception:
         return {
             "domainName": f"{domain_name}.lk",
             "domainDescription": "Failed to parse response from LLM.",
-            "relatedFields": [],
-            "error": str(e)
+            "relatedFields": []
         }

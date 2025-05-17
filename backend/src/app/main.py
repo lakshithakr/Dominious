@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from src.utills import generate_domains, postprocessing, domain_details,RAG,gemma,gemma_post_processing,gemma_decsription
+from src.utills import generate_domains, postprocessing, domain_details,RAG,gemma,gemma_post_processing,gemma_decsription,gemma_preprocess
 
 app = FastAPI()
 
@@ -38,7 +38,9 @@ async def generate_domains_endpoint(prompt: Prompt):
 @app.post("/details/")
 async def get_domain_details(request: DetailRequest):
     # dd=domain_details(request.domain_name,request.prompt)
-    dd=gemma_decsription(request.domain_name,request.prompt)
+    dd,domain_name=gemma_decsription(request.domain_name,request.prompt)
+    print(dd)
+    dd=gemma_preprocess(dd,domain_name)
     print("\n\n\n\n\n")
     print(dd)
     return dd
