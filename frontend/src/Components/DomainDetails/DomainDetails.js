@@ -59,14 +59,24 @@ const DomainDetails = () => {
           </div>
 
           <div className="domain-cta mt-4 text-center">
-            <a 
-              href='#' 
+            <button
               className="btn btn-primary domain-link-btn"
-              target="_blank"
-              rel="noopener noreferrer"
+              onClick={() => {
+                // Copy domain name to clipboard
+                navigator.clipboard.writeText(domainDetails.domainName.slice(0, -3))
+                  .then(() => {
+                    // Show alert
+                    alert(`Your domain name "${domainDetails.domainName.slice(0, -3)}" is copied! Paste it in domains.lk search bar.`);
+                    // Open domains.lk in a new tab
+                    window.open("https://www.domains.lk/", "_blank", "noopener,noreferrer");
+                  })
+                  .catch((err) => {
+                    console.error("Failed to copy domain name:", err);
+                  });
+              }}
             >
               Visit domains.lk
-            </a>
+            </button>
           </div>
         </div>
       </div>
