@@ -1,77 +1,116 @@
-import React, { useEffect,useState } from "react";
+import React, { useEffect, useState } from "react";
 import DomainCard from "../DomainCard/DomainCard";
-import "./DomainList.css"; // Styling file
+import "./DomainList.css";
+import { useNavigate } from "react-router-dom";
 
-// const domainNames = [
-//     "FinanceFly.lk",
-//     "MoneyMind.lk",
-//     "WealthWise.lk",
-//     "CashClever.lk",
-//     "EconoSavvy.lk",
-//     "FiscalFriend.lk",
-//     "ProsperityPath",
-//     "InvestInsight",
-//     "BudgetBoss",
-//     "CashCraft",
-//   ];
-  
-  const DomainList = () => {
-    const [domainNames, setDomainNames] = useState([]);
-    const [visibleDomains, setVisibleDomains] = useState(4);
-    const [loading, setLoading] = useState(true);
-    const handleLoadMore = () => {
-      setVisibleDomains((prev) => prev + 4);
-    };
-  
-    useEffect(() => {
-      const fetchDomains = async () => {
-        try {
-          const prompt = sessionStorage.getItem("userPrompt") || "default";
-          const response = await fetch("http://localhost:8000/generate-domains/", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ prompt }),
-          });
-  
-          const data = await response.json();
-          setDomainNames(data.domains);
-          setLoading(false);
-        } catch (error) {
-          console.error("Error fetching domains:", error);
-          setLoading(false);
-        }
-      };
-  
-      fetchDomains();
-    }, []);
-    if (loading){
-      return (
-        <div className="loading-container">
-          <div className="spinner"></div>
-          <p className="loading-text">Fetching domain Names...</p>
-        </div>
-      );
-    };
+const DomainList = () => {
+  const [domainNames, setDomainNames] = useState([]);
+  const [visibleDomains, setVisibleDomains] = useState(4);
+  const [loading, setLoading] = useState(true);
+  const [searchInput, setSearchInput] = useState("");
+  const navigate = useNavigate();
+
+  const handleLoadMore = () => {
+    setVisibleDomains((prev) => prev + 4);
+  };
+
+  const handleNewSearch = (e) => {
+    e.preventDefault();
+    if (searchInput.trim() === "") return;
+    
+    sessionStorage.setItem("userPrompt", searchInput);
+    sessionStorage.removeItem("cachedDomains"); // Clear cache for new search
+    setLoading(true);
+    fetchDomains(searchInput);
+  };
+
+  const fetchDomains = async (prompt) => {
+    try {
+      const response = await fetch("http://localhost:8000/generate-domains/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ prompt }),
+      });
+
+      const data = await response.json();
+      setDomainNames(data.domains);
+      // Cache the results
+      sessionStorage.setItem("cachedDomains", JSON.stringify({
+        prompt,
+        domains: data.domains,
+        timestamp: Date.now()
+      }));
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching domains:", error);
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const prompt = sessionStorage.getItem("userPrompt") || "default";
+    setSearchInput(prompt);
+
+    // Check for cached domains
+    const cachedData = sessionStorage.getItem("cachedDomains");
+    if (cachedData) {
+      const { prompt: cachedPrompt, domains } = JSON.parse(cachedData);
+      if (cachedPrompt === prompt) {
+        setDomainNames(domains);
+        setLoading(false);
+        return;
+      }
+    }
+    
+    fetchDomains(prompt);
+  }, []);
+
+  if (loading) {
     return (
-      <div className="container mt-5">
-        <div className="row justify-content-around">
-          {domainNames.slice(0, visibleDomains).map((name, index) => (
-            <div className="item col-lg-6 col-md-6 col-sm-12" key={index}>
-              <DomainCard domainName={name} />
-            </div>
-          ))}
-        </div>
-        {visibleDomains < domainNames.length && (
-          <div className="load text-center">
-            <button className="button" onClick={handleLoadMore}>
-              Load More
-            </button>
-          </div>
-        )}
+      <div className="loading-container">
+        <div className="spinner"></div>
+        <p className="loading-text">Fetching domain Names...</p>
       </div>
     );
-  };
-  
-  export default DomainList;
+  }
+
+  return (
+    <div className="container mt-5">
+      <div className="row mb-4">
+        <div className="col-12">
+          <form onSubmit={handleNewSearch} className="search-box">
+            <input
+              type="text"
+              placeholder="Search for new domain names..."
+              className="search-input"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+            />
+            <button type="submit" className="search-button">
+              Search
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <div className="row justify-content-around">
+        {domainNames.slice(0, visibleDomains).map((name, index) => (
+          <div className="item col-lg-6 col-md-6 col-sm-12" key={index}>
+            <DomainCard domainName={name} />
+          </div>
+        ))}
+      </div>
+      {visibleDomains < domainNames.length && (
+        <div className="load text-center">
+          <button className="button" onClick={handleLoadMore}>
+            Load More
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default DomainList;

@@ -9,7 +9,7 @@ const DomainsPage = () => {
     <div>
         <MobileNavbar/>
         <NavBar/>
-        <DomainSearch/>
+        {/* <DomainSearch/> */}
         <DomainList/>
         <Footer/>
     </div>
