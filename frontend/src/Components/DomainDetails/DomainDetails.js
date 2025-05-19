@@ -60,7 +60,7 @@ const DomainDetails = () => {
 
           <div className="domain-cta mt-4 text-center">
             <a 
-              href='#' 
+              href='https://www.domains.lk/' 
               className="btn btn-primary domain-link-btn"
               target="_blank"
               rel="noopener noreferrer"
