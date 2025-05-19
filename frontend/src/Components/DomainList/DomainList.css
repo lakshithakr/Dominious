@@ -34,7 +34,6 @@ button {
   text-align: center;
   padding: 20px; /* For mobile padding */
   box-sizing: border-box;
-  margin-top: -320px;
 }
 
 .spinner {
@@ -73,5 +72,13 @@ button {
   letter-spacing: 0.5px;
   line-height: 1.4;
   max-width: 90%;
+}
+
+.new-search{
+  background-color: #132361;
+  width: 100%;
+  padding: 1rem 0;
+  margin: 0;
+  margin-bottom: 50px;
 }
 

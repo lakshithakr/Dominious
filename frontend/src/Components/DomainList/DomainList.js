@@ -77,9 +77,8 @@ const DomainList = () => {
   }
 
   return (
-    <div className="container mt-5">
-      <div className="row mb-4">
-        <div className="col-12">
+    <div className="new-container">
+      <div className="new-search">
           <form onSubmit={handleNewSearch} className="search-box">
             <input
               type="text"
@@ -92,9 +91,8 @@ const DomainList = () => {
               Search
             </button>
           </form>
-        </div>
       </div>
-
+      <div className="container mt-5">
       <div className="row justify-content-around">
         {domainNames.slice(0, visibleDomains).map((name, index) => (
           <div className="item col-lg-6 col-md-6 col-sm-12" key={index}>
@@ -109,6 +107,7 @@ const DomainList = () => {
           </button>
         </div>
       )}
+      </div>
     </div>
   );
 };
