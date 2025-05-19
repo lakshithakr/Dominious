@@ -3,6 +3,10 @@ fypenv\Scripts\activate
 uvicorn backend.src.app.main:app --reload
 
 
+docker-compose down           # Stops and removes old containers
+docker-compose build          # Builds updated images
+docker-compose up -d          # Starts containers in background
+
 reminder--
 root.render(
   // <React.StrictMode>
