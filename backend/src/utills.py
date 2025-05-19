@@ -112,7 +112,7 @@ import ast
 
 def domain_details(domain_name: str, prompt: str):
     template = f"""
-You are a branding and domain expert.Generate a Python dictionary in the following format. The description should 50-100 words and it should describe how domain name suitable for the user requirements:
+You are a branding and domain expert.Generate a Python dictionary in the following format. The description should 100-150 words and it should describe how domain name suitable for the user requirements:
 
 {{
     "domainName": "{domain_name}.lk",
