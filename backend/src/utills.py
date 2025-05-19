@@ -184,7 +184,7 @@ def gemma_post_processing(output):
 
 def gemma_decsription(domain_name: str, prompt: str):
     template = f"""
-        You are a branding and domain expert.Generate a Python dictionary in the following format. The description should 100-200 words and it should describe how domain name suitable for the user requirements:
+        You are a branding and domain expert.Generate a Python dictionary in the following format. The description should 200-300 words and it should describe how domain name suitable for the user requirements:
         Domain name: {domain_name}
         Prompt: {prompt}
         {{
