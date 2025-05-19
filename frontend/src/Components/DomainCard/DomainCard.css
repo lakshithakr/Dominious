@@ -3,6 +3,13 @@
     padding: 15px;
     text-align: center;
     font-weight: bold;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+  }
+
+.domain-card:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
   }
   
   
@@ -35,7 +42,3 @@
     }
   
 }
-
-
-
-
