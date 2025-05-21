@@ -1,13 +1,17 @@
+version: '3.8'
+
 services:
   frontend:
     build:
       context: ./frontend
     ports:
-      - "3000:3000"
+      - "80:80"  # Updated from 3000:3000 to 80:80 for Nginx
     environment:
-      - REACT_APP_API_URL=http://backend:8000  # If you want to call the backend from frontend
+      - REACT_APP_API_URL=http://backend:8000
     env_file:
       - .env
+    depends_on:
+      - backend
 
   backend:
     build:

@@ -1,20 +1,17 @@
-# Use a base image with Node.js
-FROM node:16
+# Stage 1: Build the React app
+FROM node:16 as build
 
-# Set working directory inside the container
 WORKDIR /app
-
-# Copy the package.json and package-lock.json
 COPY package*.json ./
-
-# Install dependencies (this will install react-icons too)
 RUN npm install
-RUN npm install react-icons
-# Copy all the frontend code
 COPY . .
+RUN npm run build
 
-# Expose the port (assuming you're running on port 3000)
-EXPOSE 3000
+# Stage 2: Serve the React app with Nginx
+FROM nginx:alpine
 
-# Start the React app
-CMD ["npm", "start"]
+# Remove default Nginx config and add your own if needed
+COPY --from=build /app/build /usr/share/nginx/html
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]
