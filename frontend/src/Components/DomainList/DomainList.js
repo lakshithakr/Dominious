@@ -5,13 +5,13 @@ import { useNavigate } from "react-router-dom";
 
 const DomainList = () => {
   const [domainNames, setDomainNames] = useState([]);
-  const [visibleDomains, setVisibleDomains] = useState(4);
+  const [visibleDomains, setVisibleDomains] = useState(6);
   const [loading, setLoading] = useState(true);
   const [searchInput, setSearchInput] = useState("");
   const navigate = useNavigate();
 
   const handleLoadMore = () => {
-    setVisibleDomains((prev) => prev + 4);
+    setVisibleDomains((prev) => prev + 6);
   };
 
   const handleNewSearch = (e) => {
@@ -92,10 +92,10 @@ const DomainList = () => {
             </button>
           </form>
       </div>
-      <div className="container mt-5">
+      <div className="container">
       <div className="row justify-content-around">
         {domainNames.slice(0, visibleDomains).map((name, index) => (
-          <div className="item col-lg-6 col-md-6 col-sm-12" key={index}>
+          <div className="item col-lg-6 col-md-6 col-sm-12 mb-4" key={index}>
             <DomainCard domainName={name} />
           </div>
         ))}

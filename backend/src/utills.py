@@ -11,6 +11,8 @@ from langchain_pinecone import PineconeVectorStore
 from langchain.embeddings.openai import OpenAIEmbeddings
 import requests
 import json
+import wordninja
+import ast
 
 load_dotenv(find_dotenv())
 api_key=os.environ.get("OPEN_API_KEY")
@@ -90,6 +92,7 @@ def generate_domains(user_description: str, sample_domains: str) -> str:
         - Generate 10 to 15 domain names that fit the user's input description.
         - The names should be short, easy to understand, creative, memorable, and relevant to the input.
         - Use similar word structures and language style as the samples.
+        - Combining two words is better. 
         - Avoid overly long or complicated names; keep them concise and simple.
         - Do not repeat exact sample names.
         - Provide only the domain name suggestions without any domain extensions (like .com, .net, .lk).
@@ -103,12 +106,12 @@ def generate_domains(user_description: str, sample_domains: str) -> str:
     return response
 def postprocessing(text):
     domain_names = re.findall(r'\d+\.\s+([a-zA-Z0-9]+)', text)
-    return domain_names
+    return domain_details
 def final_domains():
     pass
 
 
-import ast
+
 
 def domain_details(domain_name: str, prompt: str):
     template = f"""

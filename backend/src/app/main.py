@@ -33,7 +33,7 @@ async def generate_domains_endpoint(prompt: Prompt):
     domain_names = postprocessing(domains)
     #print(domain_names)
     #domain_names=RAG(prompt.prompt)
-    print(domain_names)
+    #print(domain_names)
     return {"domains": domain_names}
 
 @app.post("/details/")
