@@ -5,7 +5,15 @@ from src.utills import generate_domains, postprocessing, domain_details,RAG,gemm
 
 app = FastAPI()
 
-origins = ["http://localhost"]  # Adjust if your frontend is hosted elsewhere
+origins = [
+    "http://localhost",
+    "http://127.0.0.1",
+    "http://frontend",  # Docker service name
+    "http://<your-ec2-public-ip>",  # Add this!
+    "http://localhost:3000",        # If testing locally
+    "http://localhost:80",          # If using Nginx
+    "http://0.0.0.0"                # Optional
+    ] # Adjust if your frontend is hosted elsewhere
 
 app.add_middleware(
     CORSMiddleware,
