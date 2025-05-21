@@ -92,7 +92,6 @@ def generate_domains(user_description: str, sample_domains: str) -> str:
         - Generate 10 to 15 domain names that fit the user's input description.
         - The names should be short, easy to understand, creative, memorable, and relevant to the input.
         - Use similar word structures and language style as the samples.
-        - Combining two words is better. 
         - Avoid overly long or complicated names; keep them concise and simple.
         - Do not repeat exact sample names.
         - Provide only the domain name suggestions without any domain extensions (like .com, .net, .lk).
