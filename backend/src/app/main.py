@@ -5,7 +5,7 @@ from src.utills import generate_domains, postprocessing, domain_details,RAG,gemm
 
 app = FastAPI()
 
-origins = ["http://localhost:3000"]  # Adjust if your frontend is hosted elsewhere
+origins = ["http://localhost"]  # Adjust if your frontend is hosted elsewhere
 
 app.add_middleware(
     CORSMiddleware,
