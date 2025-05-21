@@ -106,7 +106,7 @@ def generate_domains(user_description: str, sample_domains: str) -> str:
     return response
 def postprocessing(text):
     domain_names = re.findall(r'\d+\.\s+([a-zA-Z0-9]+)', text)
-    return domain_details
+    return domain_names
 def final_domains():
     pass
 
