@@ -9,7 +9,7 @@ origins = [
     "http://localhost",
     "http://127.0.0.1",
     "http://frontend",  # Docker service name
-    "http://<your-ec2-public-ip>",  # Add this!
+    "http://13.49.67.2",  # Add this!
     "http://localhost:3000",        # If testing locally
     "http://localhost:80",          # If using Nginx
     "http://0.0.0.0"                # Optional
@@ -55,4 +55,4 @@ async def get_domain_details(request: DetailRequest):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8000)
