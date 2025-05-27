@@ -47,6 +47,10 @@ index = pc.Index(index_name)
 vector_store = PineconeVectorStore(index=index, embedding=embeddings)
 
 
+with open("names.txt", "r") as file:
+    retrived_domain_names_list = [line.strip() for line in file]
+domain_name_set = set(retrived_domain_names_list)
+
 def RAG(user_query):
     results = vector_store.similarity_search(query=user_query,k=20)
     categories = []
@@ -69,6 +73,7 @@ def RAG(user_query):
         domain_names.append(names)
 
     domain_names = [item for sublist in domain_names for item in sublist]
+    domain_names=list(set(domain_names))
     short=domain_names[:15]
     result = ','.join(short)
     return result
@@ -231,3 +236,14 @@ def gemma_preprocess(llm_output,domain_name):
             "domainDescription": "Failed to parse response from LLM.",
             "relatedFields": []
         }
+    
+
+def is_domain_names_available(generated_name_list):
+    available_name_list = []
+    for name in generated_name_list:
+        temp = name.lower().split(".")[0]
+        if temp not in domain_name_set:
+            available_name_list.append(name)
+    return available_name_list
+    
+
