@@ -13,7 +13,6 @@ const HomePage = () => {
         <DomainSearch/>
         <About/>
         <Description/>
-        <Footer/>
     </div>
   )
 }

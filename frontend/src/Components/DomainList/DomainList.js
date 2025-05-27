@@ -5,13 +5,13 @@ import { useNavigate } from "react-router-dom";
 
 const DomainList = () => {
   const [domainNames, setDomainNames] = useState([]);
-  const [visibleDomains, setVisibleDomains] = useState(4);
+  const [visibleDomains, setVisibleDomains] = useState(6);
   const [loading, setLoading] = useState(true);
   const [searchInput, setSearchInput] = useState("");
   const navigate = useNavigate();
 
   const handleLoadMore = () => {
-    setVisibleDomains((prev) => prev + 4);
+    setVisibleDomains((prev) => prev + 6);
   };
 
   const handleNewSearch = (e) => {

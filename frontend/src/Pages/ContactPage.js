@@ -9,7 +9,6 @@ const ContactPage = () => {
         <MobileNavbar/>
         <NavBar/>
         <ContactUs/>
-        <Footer/>
     </div>
   )
 }

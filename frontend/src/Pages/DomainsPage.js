@@ -11,7 +11,6 @@ const DomainsPage = () => {
         <NavBar/>
         {/* <DomainSearch/> */}
         <DomainList/>
-        <Footer/>
     </div>
   )
 }

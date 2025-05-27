@@ -9,7 +9,6 @@ const AboutusPage = () => {
         <MobileNavbar/>
         <NavBar/>
         <AboutUs/>
-        <Footer/>
     </div>
   )
 }

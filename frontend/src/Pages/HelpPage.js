@@ -9,7 +9,6 @@ const HelpPage = () => {
         <MobileNavbar/>       
         <NavBar/>
         <Help/>
-        <Footer/>
     </div>
   )
 }
