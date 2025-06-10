@@ -9,7 +9,6 @@ const Help = () => {
             <ul>
             <li>Add keywords related to your business or idea
             (e.g.,    "food delivery", "travel guide").</li>
-            <li>Choose between Sinhala-English mixed names or fully English names.</li>
             <li>Click Generate to get .lk domain name ideas tailored to your input.</li>
             <li>Review the list and pick names you like. Adjust keywords to try different options.</li>
             </ul>

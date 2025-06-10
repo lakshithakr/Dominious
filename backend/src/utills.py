@@ -142,7 +142,7 @@ Prompt: {prompt}
             "relatedFields": [],
             "error": str(e)
         }
-
+    print(result)
     return result  # ✅ This is a dict now
 
 
@@ -189,11 +189,11 @@ def gemma_post_processing(output):
 
 def gemma_decsription(domain_name: str, prompt: str):
     template = f"""
-        You are a branding and domain expert.Generate a Python dictionary in the following format. The description should 50-100 words and it should describe how domain name suitable for the user requirements:
+        You are a branding and domain expert.Generate a Python dictionary in the following format. The domain description should 200-300 words and it should describe how domain name suitable for the user requirements. Please follow the output format given bellow, you should follow the template:
         Domain name: {domain_name}
         Prompt: {prompt}
         {{
-            "domainName": "{domain_name}.lk",
+            "domainName": "{domain_name}",
             "domainDescription": "...",  # a creative description using the prompt
             "relatedFields": [ ... ]     # 4 to 6 relevant fields
         }}
@@ -203,7 +203,7 @@ def gemma_decsription(domain_name: str, prompt: str):
     payload = {
         "inputs": template,
         "parameters": {
-            "max_new_tokens": 100,
+            "max_new_tokens": 300,
             "temperature": 0.8,
             "top_k": 50,
         }
@@ -213,6 +213,9 @@ def gemma_decsription(domain_name: str, prompt: str):
     return llm_response[0]['generated_text'],domain_name
 
 def gemma_preprocess(llm_output,domain_name):
+    print(llm_output)
+    print(type(llm_output))
+    print(llm_output[-1])
     try:
         # Try to find a code block with ```json or ```python
         code_block_match = re.search(r'```(?:json|python)?\s*(\{[\s\S]*?\})\s*```', llm_output, re.IGNORECASE)
@@ -232,7 +235,7 @@ def gemma_preprocess(llm_output,domain_name):
 
     except Exception:
         return {
-            "domainName": f"{domain_name}.lk",
+            "domainName": f"{domain_name}",
             "domainDescription": "Failed to parse response from LLM.",
             "relatedFields": []
         }
