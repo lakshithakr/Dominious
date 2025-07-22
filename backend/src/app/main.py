@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, EmailStr
 from pymongo import MongoClient
+from fastapi import Request
 import pytz
 from typing import Optional
 from datetime import datetime
@@ -23,7 +24,7 @@ MONGO_URI = "mongodb+srv://lakshitha20:Laki1234@cluster0.zzd6wpz.mongodb.net/"
 client = MongoClient(MONGO_URI)
 db = client["smartname"]
 feedback_collection = db["feedbacks"]
-
+search_log_collection = db["search_logs"]
 
 class Prompt(BaseModel):
     prompt: str
@@ -50,7 +51,7 @@ def submit_feedback(feedback: Feedback):
 
 
 @app.post("/generate-domains/")
-async def generate_domains_endpoint(prompt: Prompt):
+async def generate_domains_endpoint(prompt: Prompt,request: Request):
 
     samples=RAG(prompt.prompt)
     # print(samples)
@@ -64,6 +65,18 @@ async def generate_domains_endpoint(prompt: Prompt):
     print(domain_names)
     domain_names=is_domain_names_available(domain_names)
     print(domain_names)
+
+    sri_lanka_tz = pytz.timezone("Asia/Colombo")
+    timestamp = datetime.now(sri_lanka_tz).strftime("%Y-%m-%d %H:%M:%S")
+    ip_address = request.client.host
+
+    log_entry = {
+        "search_query": prompt.prompt,
+        "domain_recommendations": domain_names,
+        "ip_address": ip_address,
+        "timestamp": timestamp
+    }
+    search_log_collection.insert_one(log_entry)
     return {"domains": domain_names}
 
 @app.post("/details/")

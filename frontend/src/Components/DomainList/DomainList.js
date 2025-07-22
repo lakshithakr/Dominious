@@ -8,7 +8,7 @@ const DomainList = () => {
   const [visibleDomains, setVisibleDomains] = useState(6);
   const [loading, setLoading] = useState(true);
   const [searchInput, setSearchInput] = useState("");
-  const [feedbackRating, setFeedbackRating] = useState(0);
+  const [feedbackRating, setFeedbackRating] = useState(1);
   const [feedbackName, setFeedbackName] = useState("");
   const [feedbackEmail, setFeedbackEmail] = useState("");
   const [feedbackComment, setFeedbackComment] = useState("");
