@@ -8,6 +8,12 @@ const DomainList = () => {
   const [visibleDomains, setVisibleDomains] = useState(6);
   const [loading, setLoading] = useState(true);
   const [searchInput, setSearchInput] = useState("");
+  const [feedbackRating, setFeedbackRating] = useState(0);
+  const [feedbackName, setFeedbackName] = useState("");
+  const [feedbackEmail, setFeedbackEmail] = useState("");
+  const [feedbackComment, setFeedbackComment] = useState("");
+  const [feedbackStatus, setFeedbackStatus] = useState("");
+
   const navigate = useNavigate();
 
   const handleLoadMore = () => {
@@ -17,16 +23,16 @@ const DomainList = () => {
   const handleNewSearch = (e) => {
     e.preventDefault();
     if (searchInput.trim() === "") return;
-    
+
     sessionStorage.setItem("userPrompt", searchInput);
-    sessionStorage.removeItem("cachedDomains"); // Clear cache for new search
+    sessionStorage.removeItem("cachedDomains");
     setLoading(true);
     fetchDomains(searchInput);
   };
 
   const fetchDomains = async (prompt) => {
     try {
-      const response = await fetch("http://localhost:8000/generate-domains/", {
+      const response = await fetch("http://localhost:8001/generate-domains/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -36,7 +42,6 @@ const DomainList = () => {
 
       const data = await response.json();
       setDomainNames(data.domains);
-      // Cache the results
       sessionStorage.setItem("cachedDomains", JSON.stringify({
         prompt,
         domains: data.domains,
@@ -53,7 +58,6 @@ const DomainList = () => {
     const prompt = sessionStorage.getItem("userPrompt") || "default";
     setSearchInput(prompt);
 
-    // Check for cached domains
     const cachedData = sessionStorage.getItem("cachedDomains");
     if (cachedData) {
       const { prompt: cachedPrompt, domains } = JSON.parse(cachedData);
@@ -63,9 +67,44 @@ const DomainList = () => {
         return;
       }
     }
-    
+
     fetchDomains(prompt);
   }, []);
+
+  const handleFeedbackSubmit = async (e) => {
+    e.preventDefault();
+
+    const feedbackData = {
+      rating: feedbackRating,
+      name: feedbackName || null,
+      email: feedbackEmail.trim() === "" ? null : feedbackEmail,
+      comment: feedbackComment,
+    };
+
+    try {
+      const res = await fetch("http://localhost:8001/submit-feedback/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(feedbackData),
+      });
+
+      const result = await res.json();
+      if (res.ok) {
+        setFeedbackStatus("Feedback submitted successfully!");
+        setFeedbackRating(0);
+        setFeedbackName("");
+        setFeedbackEmail("");
+        setFeedbackComment("");
+      } else {
+        setFeedbackStatus(result.message || "Submission failed");
+      }
+    } catch (err) {
+      console.error("Feedback error:", err);
+      setFeedbackStatus("Error submitting feedback.");
+    }
+  };
 
   if (loading) {
     return (
@@ -79,34 +118,99 @@ const DomainList = () => {
   return (
     <div className="new-container">
       <div className="new-search">
-          <form onSubmit={handleNewSearch} className="search-box">
+        <form onSubmit={handleNewSearch} className="search-box">
+          <input
+            type="text"
+            placeholder="Search for new domain names..."
+            className="search-input"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+          />
+          <button type="submit" className="search-button">
+            Search
+          </button>
+        </form>
+      </div>
+
+      <div className="container mt-5">
+        <div className="row justify-content-around">
+          {domainNames.slice(0, visibleDomains).map((name, index) => (
+            <div className="item col-lg-6 col-md-6 col-sm-12" key={index}>
+              <DomainCard domainName={name} />
+            </div>
+          ))}
+        </div>
+
+        {visibleDomains < domainNames.length && (
+          <div className="load text-center">
+            <button className="button" onClick={handleLoadMore}>
+              Load More
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Feedback Section */}
+      <div className="feedback-section mt-5 p-4 border rounded bg-light">
+        <h4 className="text-center mb-3">Share Your Feedback</h4>
+        <form onSubmit={handleFeedbackSubmit} className="feedback-form">
+          <h6 className="rating-header">How would you rate your experience?</h6>
+          <div className="mb-3 star-rating">
+            {[1, 2, 3, 4, 5].map((star) => (
+              <span
+                key={star}
+                style={{
+                  cursor: "pointer",
+                  color: feedbackRating >= star ? "#ffc107" : "#e4e5e9",
+                  fontSize: "1.5rem"
+                }}
+                onClick={() => setFeedbackRating(star)}
+              >
+                ★
+              </span>
+            ))}
+          </div>
+
+          <div className="mb-2">
             <input
               type="text"
-              placeholder="Search for new domain names..."
-              className="search-input"
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
+              placeholder="Your Name (optional)"
+              className="form-control"
+              value={feedbackName}
+              onChange={(e) => setFeedbackName(e.target.value)}
             />
-            <button type="submit" className="search-button">
-              Search
-            </button>
-          </form>
-      </div>
-      <div className="container mt-5">
-      <div className="row justify-content-around">
-        {domainNames.slice(0, visibleDomains).map((name, index) => (
-          <div className="item col-lg-6 col-md-6 col-sm-12" key={index}>
-            <DomainCard domainName={name} />
           </div>
-        ))}
-      </div>
-      {visibleDomains < domainNames.length && (
-        <div className="load text-center">
-          <button className="button" onClick={handleLoadMore}>
-            Load More
+
+          <div className="mb-2">
+            <input
+              type="email"
+              placeholder="Your Email (optional)"
+              className="form-control"
+              value={feedbackEmail}
+              onChange={(e) => setFeedbackEmail(e.target.value)}
+            />
+          </div>
+
+          <div className="mb-3">
+            <textarea
+              placeholder="Your comments..."
+              className="form-control"
+              value={feedbackComment}
+              onChange={(e) => setFeedbackComment(e.target.value)}
+              required
+            />
+          </div>
+
+          <button type="submit" className="btn btn-primary w-100">
+            Submit Feedback
           </button>
-        </div>
-      )}
+
+          {feedbackStatus && (
+            <div className="alert alert-info mt-3 text-center">
+              {feedbackStatus}
+            </div>
+          )}
+        </form>
       </div>
     </div>
   );

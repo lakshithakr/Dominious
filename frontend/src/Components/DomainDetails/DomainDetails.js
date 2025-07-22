@@ -10,7 +10,7 @@ const DomainDetails = () => {
     const prompt = sessionStorage.getItem("userPrompt");
     const domainName = sessionStorage.getItem("selectedDomain");
 
-    fetch("http://127.0.0.1:8000/details/", {
+    fetch("http://127.0.0.1:8001/details/", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -77,6 +77,20 @@ const DomainDetails = () => {
             >
               Visit domains.lk
             </button>
+            <div className="mt-3">
+              <p>
+                Loved your domain suggestions?{' '}
+                <a
+                  href="https://cloud.domains.lk/index.php/apps/forms/s/jnaRpqMsw4kW34w9aQzc9bH7"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="feedback-link"
+                >
+                  Click here
+                </a>{' '}
+                to share your feedback and help us improve!
+              </p>
+            </div>
           </div>
         </div>
       </div>

@@ -82,3 +82,103 @@ button {
   margin-bottom: 50px;
 }
 
+
+.feedback-section {
+  max-width: 600px;
+  margin: 40px auto 60px;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 12px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.feedback-section h4 {
+  color: #132361;
+  font-weight: 700;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.feedback-form input,
+.feedback-form textarea {
+  width: 100%;
+  padding: 12px 15px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  font-family: inherit;
+  box-sizing: border-box;
+  margin-bottom: 15px;
+  transition: border-color 0.3s ease;
+}
+
+.feedback-form input:focus,
+.feedback-form textarea:focus {
+  border-color: #F8991D;
+  outline: none;
+}
+
+.feedback-form textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.feedback-form button.btn {
+  background-color: #F8991D;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 14px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  width: 100%;
+}
+
+.feedback-form button.btn:hover {
+  background-color: darkorange;
+}
+
+.feedback-form .alert {
+  font-size: 1rem;
+  margin-top: 15px;
+  color: #132361;
+}
+
+.feedback-section span {
+  cursor: pointer;
+  margin-right: 6px;
+  user-select: none;
+  transition: color 0.3s ease;
+}
+
+/* Container for stars */
+.feedback-form .star-rating {
+  display: flex;
+  justify-content: center;
+  gap: 10px; /* space between stars */
+  margin-bottom: 15px;
+}
+
+/* Each star */
+.feedback-form .star-rating span {
+  cursor: pointer;
+  user-select: none;
+  font-size: 2rem; /* bigger stars */
+  transition: color 0.3s ease;
+  color: #e4e5e9; /* default gray */
+}
+
+/* Highlighted stars */
+.feedback-form .star-rating .selected,
+.feedback-form .star-rating span:hover,
+.feedback-form .star-rating span:hover ~ span {
+  color: #ffc107; /* gold color */
+}
+
+.rating-header {
+  text-align: center;
+  display: block;
+  margin: 0 auto;
+}
