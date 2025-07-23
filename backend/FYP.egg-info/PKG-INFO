@@ -12,6 +12,10 @@ Requires-Dist: langchain_community
 Requires-Dist: langchain_openai
 Requires-Dist: pinecone
 Requires-Dist: langchain-pinecone
+Requires-Dist: pymongo
+Requires-Dist: dnspython
+Requires-Dist: pydantic[email]
+Requires-Dist: pytz
 Dynamic: author
 Dynamic: author-email
 Dynamic: requires-dist
