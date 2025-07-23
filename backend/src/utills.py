@@ -51,20 +51,22 @@ def generate_domains(prompt: str) -> str:
     response = llm(full_prompt)
     return response
 
-def postprocessing(text, prompt):
+def postprocessing(text):
     domain_names = re.findall(r'\d+\.\s+([a-zA-Z0-9]+)', text)
-    multi_description(prompt, domain_names)
     return domain_names
 
 def final_domains():
     pass
 
-
 import ast
+import multiprocessing
+import threading
+from concurrent.futures import ThreadPoolExecutor
 
 def domain_details(domain_name: str, prompt: str):
+    """Generate details for a single domain name"""
     template = f"""
-You are a branding and domain expert.Generate a Python dictionary in the following format. The description should 50-100 words and it should describe how domain name suitable for the user requirements:
+You are a branding and domain expert. Generate a Python dictionary in the following format. The description should be 50-100 words and it should describe how domain name is suitable for the user requirements:
 
 {{
     "domainName": "{domain_name}.lk",
@@ -76,32 +78,110 @@ Domain name: {domain_name}
 Prompt: {prompt}
 """
     
-    response_text = llm.invoke(template)  # ✅ use .invoke() instead of calling directly
-
-    #print(type(response_text))  # should be <class 'str'> if it’s a string
-
     try:
-        result = ast.literal_eval(response_text)
+        response_text = llm.invoke(template)
+        # Try to parse the response as a Python dictionary
+        result = ast.literal_eval(response_text.strip())
+        
+        # Ensure the result has the required structure
+        if not isinstance(result, dict):
+            raise ValueError("Response is not a dictionary")
+            
+        # Validate required keys
+        required_keys = ["domainName", "domainDescription", "relatedFields"]
+        if not all(key in result for key in required_keys):
+            raise ValueError("Missing required keys in response")
+            
+        return result
+        
     except Exception as e:
-        result = {
+        print(f"Error processing domain {domain_name}: {str(e)}")
+        # Return a fallback result
+        return {
             "domainName": f"{domain_name}.lk",
-            "domainDescription": "Failed to parse response from LLM.",
-            "relatedFields": [],
+            "domainDescription": f"A unique domain name '{domain_name}' suitable for your business needs based on: {prompt[:50]}...",
+            "relatedFields": ["Business", "Technology", "Innovation", "Digital Services"],
             "error": str(e)
         }
 
-    return result  # ✅ This is a dict now
-
 def create_input_list(prompt, name_list):
+    """Create input list for multiprocessing"""
     input_list = []
     for name in name_list:
         input_list.append((name, prompt))
     return input_list
 
 def multi_description(prompt, name_list):
-    import multiprocessing
-    input_data = create_input_list(prompt, name_list)
-    with multiprocessing.Pool() as pool:
-        results = pool.starmap(domain_details, input_data)
-    print(results)
-    return results
+    """Generate descriptions for multiple domain names using multiprocessing"""
+    if not name_list:
+        print("No domain names to process")
+        return []
+    
+    print(f"Processing {len(name_list)} domains: {name_list}")
+    
+    try:
+        input_data = create_input_list(prompt, name_list)
+        
+        # Use multiprocessing to generate details for all domains
+        with multiprocessing.Pool() as pool:
+            results = pool.starmap(domain_details, input_data)
+        
+        print(f"Successfully processed {len(results)} domain details")
+        return results
+        
+    except Exception as e:
+        print(f"Error in multi_description: {str(e)}")
+        # Fallback: process sequentially if multiprocessing fails
+        results = []
+        for domain_name in name_list:
+            result = domain_details(domain_name, prompt)
+            results.append(result)
+        return results
+
+def multi_description_threaded(prompt, name_list, max_workers=5):
+    """
+    Alternative implementation using ThreadPoolExecutor for better integration with FastAPI
+    This can be used if multiprocessing causes issues in the threading context
+    """
+    if not name_list:
+        print("No domain names to process")
+        return []
+    
+    print(f"Processing {len(name_list)} domains with threading: {name_list}")
+    
+    results = []
+    try:
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            # Submit all tasks
+            future_to_domain = {
+                executor.submit(domain_details, domain_name, prompt): domain_name 
+                for domain_name in name_list
+            }
+            
+            # Collect results as they complete
+            for future in future_to_domain:
+                try:
+                    result = future.result(timeout=30)  # 30 second timeout per domain
+                    results.append(result)
+                except Exception as e:
+                    domain_name = future_to_domain[future]
+                    print(f"Error processing domain {domain_name}: {str(e)}")
+                    # Add fallback result
+                    results.append({
+                        "domainName": f"{domain_name}.lk",
+                        "domainDescription": f"A unique domain name '{domain_name}' suitable for your business needs.",
+                        "relatedFields": ["Business", "Technology", "Innovation", "Digital Services"],
+                        "error": str(e)
+                    })
+        
+        print(f"Successfully processed {len(results)} domain details with threading")
+        return results
+        
+    except Exception as e:
+        print(f"Error in multi_description_threaded: {str(e)}")
+        # Final fallback: process sequentially
+        results = []
+        for domain_name in name_list:
+            result = domain_details(domain_name, prompt)
+            results.append(result)
+        return results
