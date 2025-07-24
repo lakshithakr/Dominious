@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import threading
 import uuid
-from src.utills import generate_domains, postprocessing, domain_details, multi_description
+from src.utills import generate_domains, postprocessing, domain_details, multi_description, multi_description_threaded
 
 # Global dictionary to store background task results
 background_results = {}
@@ -31,7 +31,7 @@ def background_domain_details_task(task_id: str, prompt: str, domain_names: list
     """Background task to generate domain details"""
     try:
         print(f"Starting background task {task_id} for {len(domain_names)} domains")
-        domain_details_list = multi_description(prompt, domain_names)
+        domain_details_list = multi_description_threaded(prompt, domain_names)
         background_results[task_id] = {
             "status": "completed",
             "data": domain_details_list,
