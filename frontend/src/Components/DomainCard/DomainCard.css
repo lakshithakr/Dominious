@@ -1,48 +1,153 @@
+/* DomainCard.css */
 .domain-card {
-    border-radius: 15px;
-    padding: 15px;
-    text-align: center;
-    font-weight: bold;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    cursor: pointer;
-  }
-
-.domain-card:hover {
-  transform: translateY(-5px) scale(1.02);
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
-  }
-  
-  
-  .card-body {
-    position: relative;
-  }
-  
-  .card-body .card-title {
-    font-size: 24px;
-    font-weight: 600;
-  }
-  
-  .btn-sm {
-    font-size: 12px;
-  }
-
-  .btn{
-    border-radius: 30px;
-  }
-
-
-  @media (max-width:1000px) {
-    .card-body .card-title {
-      font-size: 16px;
-      font-weight: 600;
-    }
-    
-    .btn-sm {
-      font-size: 8px;
-    }
-  
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 1rem;
+  border-radius: 8px;
+  overflow: hidden;
 }
 
+.domain-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-color: #007bff !important;
+}
 
+.domain-card .card-body {
+  padding: 1.25rem;
+}
 
+.card-header-section {
+  border-bottom: 1px solid #e9ecef;
+  padding-bottom: 0.75rem;
+}
 
+.card-title {
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 1.1rem;
+}
+
+.card-footer-section {
+  padding-top: 0.75rem;
+}
+
+/* Description Status Indicators */
+.description-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.description-status.completed {
+  color: #28a745;
+}
+
+.description-status.processing {
+  color: #007bff;
+}
+
+.description-status.failed {
+  color: #dc3545;
+}
+
+.description-status.pending {
+  color: #6c757d;
+}
+
+.status-icon {
+  font-size: 0.9rem;
+  min-width: 16px;
+  text-align: center;
+}
+
+.status-icon.spinner {
+  width: 12px;
+  height: 12px;
+  border: 2px solid #f3f3f3;
+  border-top: 2px solid #007bff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  font-size: 0;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.status-text {
+  font-weight: 500;
+  font-size: 0.8rem;
+}
+
+/* Description Preview */
+.description-preview {
+  font-size: 0.85rem;
+  color: #6c757d;
+  line-height: 1.4;
+  margin: 0;
+  background: #f8f9fa;
+  padding: 0.5rem;
+  border-radius: 4px;
+  border-left: 3px solid #28a745;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .domain-card .card-body {
+    padding: 1rem;
+  }
+  
+  .card-header-section {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .card-title {
+    font-size: 1rem;
+  }
+  
+  .description-preview {
+    font-size: 0.8rem;
+  }
+}
+
+/* Accessibility */
+.domain-card:focus {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
+
+.domain-card[aria-disabled="true"] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.domain-card[aria-disabled="true"]:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+/* Animation for status changes */
+.description-status {
+  transition: all 0.3s ease;
+}
+
+.description-preview {
+  animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

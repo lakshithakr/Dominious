@@ -1,84 +1,283 @@
-button {
-    font-size: 16px;
-  }
+/* Add these styles to your existing DomainList.css */
 
-.item{
-    margin-top: 20px;
+/* Task Progress Container */
+.task-progress-container {
+  margin: 1rem 0;
+  padding: 0 1rem;
 }
 
-.load{
-    margin-top: 20px;
-    
+.task-progress {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border: 1px solid #dee2e6;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.button{
-    border: none;
-    background-color: #F8991D;
-    color: white;
-    border-radius: 10px;
-    width: 150px;
-    height: 50px;
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
-.button:hover{
-    background-color: darkorange;
+.status-badge {
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
+.status-badge.pending {
+  background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+  color: #856404;
+  border: 1px solid #ffecb5;
+}
+
+.status-badge.processing {
+  background: linear-gradient(135deg, #cce5ff, #a6d5fa);
+  color: #004085;
+  border: 1px solid #b8daff;
+  animation: pulse 2s infinite;
+}
+
+.status-badge.completed {
+  background: linear-gradient(135deg, #d1e7dd, #a3d9a4);
+  color: #0a3622;
+  border: 1px solid #badbcc;
+}
+
+.status-badge.failed {
+  background: linear-gradient(135deg, #f8d7da, #f5c2c7);
+  color: #721c24;
+  border: 1px solid #f1aeb5;
+}
+
+.progress-text {
+  color: #6c757d;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.progress-bar-container {
+  width: 100%;
+  height: 8px;
+  background: #e9ecef;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 0.75rem;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #007bff, #0056b3);
+  border-radius: 4px;
+  transition: width 0.6s ease, background-color 0.3s ease;
+  box-shadow: 0 1px 2px rgba(0, 123, 255, 0.3);
+}
+
+.progress-info {
+  text-align: center;
+  margin-top: 0.5rem;
+}
+
+.progress-info small {
+  color: #6c757d;
+  font-style: italic;
+  line-height: 1.4;
+}
+
+/* Completion Notification */
+.completion-notification {
+  margin: 1rem 0;
+  padding: 0 1rem;
+}
+
+.completion-message {
+  background: linear-gradient(135deg, #d1e7dd 0%, #a3d9a4 100%);
+  color: #0a3622;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  border: 1px solid #badbcc;
+  text-align: center;
+  font-weight: 500;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  animation: slideDown 0.5s ease;
+}
+
+/* Error Notification */
+.error-notification {
+  margin: 1rem 0;
+  padding: 0 1rem;
+}
+
+.error-message {
+  background: linear-gradient(135deg, #f8d7da 0%, #f5c2c7 100%);
+  color: #721c24;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  border: 1px solid #f1aeb5;
+  text-align: center;
+  font-weight: 500;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Results Header */
+.results-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.results-header h2 {
+  color: #2c3e50;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.results-subtitle {
+  color: #6c757d;
+  font-size: 1.1rem;
+  margin-bottom: 0;
+}
+
+/* No Results Container */
+.no-results-container {
+  text-align: center;
+  padding: 3rem 1rem;
+  margin-top: 2rem;
+}
+
+.no-results-icon {
+  font-size: 4rem;
+  color: #6c757d;
+  margin-bottom: 1rem;
+}
+
+.no-results-container h3 {
+  color: #2c3e50;
+  margin-bottom: 1rem;
+}
+
+.no-results-container p {
+  color: #6c757d;
+  font-size: 1.1rem;
+}
+
+/* Enhanced Loading Container */
 .loading-container {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  background-color: #f8f9fa;
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  padding: 2rem;
+}
+
+.loading-details {
+  margin-top: 1rem;
   text-align: center;
-  padding: 20px; /* For mobile padding */
-  box-sizing: border-box;
 }
 
-.spinner {
-  border: 6px solid #e0e0e0;
-  border-top: 6px solid #007bff;
-  border-radius: 50%;
-  width: 60px;
-  height: 60px;
-  animation: spin 1s linear infinite;
-  margin-bottom: 20px;
+.loading-details small {
+  color: #6c757d;
+  font-style: italic;
 }
 
-/* Spinner size responsive */
-@media (max-width: 600px) {
-  .spinner {
-    width: 30px;
-    height: 30px;
-    border-width: 4px;
-    margin-bottom: 15px;
+/* Enhanced Load More Button */
+.button {
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 25px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+}
+
+.button:hover {
+  background: linear-gradient(135deg, #0056b3, #004085);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.4);
+}
+
+/* Animations */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
   }
-
-  .loading-text {
-    font-size: 1.2rem;
+  50% {
+    opacity: 0.8;
+    transform: scale(1.02);
   }
 }
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.loading-text {
-  font-size: 1.5rem;
-  font-weight: 500;
-  color: #333;
-  letter-spacing: 0.5px;
-  line-height: 1.4;
-  max-width: 90%;
+/* Responsive Design */
+@media (max-width: 768px) {
+  .task-progress {
+    padding: 1rem;
+  }
+  
+  .progress-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+  
+  .status-badge {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.8rem;
+  }
+  
+  .progress-text {
+    font-size: 0.85rem;
+  }
+  
+  .completion-message,
+  .error-message {
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+  }
+  
+  .results-header h2 {
+    font-size: 1.5rem;
+  }
+  
+  .results-subtitle {
+    font-size: 1rem;
+  }
 }
 
-.new-search{
-  background-color: #132361;
-  width: 100%;
-  padding: 1rem 0;
-  margin: 0;
-  margin-bottom: 50px;
+@media (max-width: 576px) {
+  .task-progress-container,
+  .completion-notification,
+  .error-notification {
+    margin: 0.5rem 0;
+    padding: 0 0.5rem;
+  }
+  
+  .no-results-container {
+    padding: 2rem 1rem;
+  }
+  
+  .no-results-icon {
+    font-size: 3rem;
+  }
 }
-
