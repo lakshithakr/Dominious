@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import DomainCard from "../DomainCard/DomainCard";
 import "./DomainList.css";
 import { useNavigate } from "react-router-dom";
@@ -9,28 +9,134 @@ const DomainList = () => {
   const [loading, setLoading] = useState(true);
   const [searchInput, setSearchInput] = useState("");
   
-  // Background processing states
+  // WebSocket and background processing states
   const [taskId, setTaskId] = useState(null);
   const [taskStatus, setTaskStatus] = useState(null);
   const [domainDescriptions, setDomainDescriptions] = useState({});
   const [backgroundError, setBackgroundError] = useState(null);
+  const [connectionStatus, setConnectionStatus] = useState('disconnected');
+  const [progress, setProgress] = useState({ processed: 0, total: 0, percentage: 0 });
   
+  const wsRef = useRef(null);
   const navigate = useNavigate();
 
   const handleLoadMore = () => {
     setVisibleDomains((prev) => prev + 6);
   };
 
-  // Poll for task status and descriptions
+  // WebSocket connection management
+  const connectWebSocket = useCallback((taskId) => {
+    if (wsRef.current) {
+      wsRef.current.close();
+    }
+
+    const ws = new WebSocket(`ws://localhost:8000/ws/${taskId}`);
+    wsRef.current = ws;
+
+    ws.onopen = () => {
+      console.log('WebSocket connected for task:', taskId);
+      setConnectionStatus('connected');
+    };
+
+    ws.onmessage = (event) => {
+      try {
+        const message = JSON.parse(event.data);
+        console.log('WebSocket message:', message);
+
+        switch (message.type) {
+          case 'domain_update':
+            // Update specific domain detail as it comes in
+            const domainData = message.data;
+            const domainKey = domainData.domainName.replace('.lk', '');
+            
+            setDomainDescriptions(prev => ({
+              ...prev,
+              [domainKey]: domainData
+            }));
+            
+            // Update cache with new description
+            const cachedDescriptions = JSON.parse(sessionStorage.getItem("domainDescriptions") || "{}");
+            cachedDescriptions[domainKey] = domainData;
+            sessionStorage.setItem("domainDescriptions", JSON.stringify({
+              taskId: taskId,
+              descriptions: cachedDescriptions,
+              timestamp: Date.now()
+            }));
+            break;
+
+          case 'progress_update':
+            // Update progress information
+            const progressData = message.data;
+            setProgress({
+              processed: progressData.processed,
+              total: progressData.total,
+              percentage: progressData.progress
+            });
+            
+            setTaskStatus(prev => ({
+              ...prev,
+              status: 'processing',
+              progress: progressData.progress,
+              processed_domains: progressData.processed,
+              total_domains: progressData.total
+            }));
+            break;
+
+          case 'completed':
+            // All domains completed
+            console.log('All domain descriptions completed');
+            setTaskStatus(prev => ({
+              ...prev,
+              status: 'completed',
+              progress: 100
+            }));
+            setConnectionStatus('completed');
+            break;
+
+          default:
+            console.log('Unknown message type:', message.type);
+        }
+      } catch (error) {
+        console.error('Error parsing WebSocket message:', error);
+      }
+    };
+
+    ws.onclose = (event) => {
+      console.log('WebSocket closed:', event.code, event.reason);
+      setConnectionStatus('disconnected');
+    };
+
+    ws.onerror = (error) => {
+      console.error('WebSocket error:', error);
+      setConnectionStatus('error');
+      setBackgroundError('WebSocket connection error');
+    };
+  }, []);
+
+  // Clean up WebSocket on component unmount
+  useEffect(() => {
+    return () => {
+      if (wsRef.current) {
+        wsRef.current.close();
+      }
+    };
+  }, []);
+
+  // Fetch task status (fallback when WebSocket isn't available)
   const pollTaskStatus = useCallback(async (id) => {
     try {
       const response = await fetch(`http://localhost:8000/task-status/${id}`);
       if (response.ok) {
         const status = await response.json();
         setTaskStatus(status);
+        setProgress({
+          processed: status.processed_domains || 0,
+          total: status.total_domains || 0,
+          percentage: status.progress || 0
+        });
 
-        // If task is completed, fetch descriptions
-        if (status.status === 'completed') {
+        // If task is completed and we don't have WebSocket, fetch descriptions
+        if (status.status === 'completed' && connectionStatus !== 'connected') {
           await fetchDescriptions(id);
           return false; // Stop polling
         } else if (status.status === 'failed') {
@@ -44,9 +150,9 @@ const DomainList = () => {
       setBackgroundError('Error checking description status');
       return false; // Stop polling on error
     }
-  }, []);
+  }, [connectionStatus]);
 
-  // Fetch descriptions when ready
+  // Fetch descriptions when ready (fallback method)
   const fetchDescriptions = async (id) => {
     try {
       const response = await fetch(`http://localhost:8000/domain-details/${id}`);
@@ -55,7 +161,6 @@ const DomainList = () => {
         if (data.status === 'completed' && data.domain_details) {
           const descriptionsMap = {};
           data.domain_details.forEach(item => {
-            // Extract domain name without .lk extension for matching
             const domainKey = item.domainName.replace('.lk', '');
             descriptionsMap[domainKey] = item;
           });
@@ -75,22 +180,6 @@ const DomainList = () => {
     }
   };
 
-  // Start polling when we have a task ID
-  useEffect(() => {
-    if (!taskId || !taskStatus) return;
-
-    if (taskStatus.status === 'pending' || taskStatus.status === 'processing') {
-      const pollInterval = setInterval(async () => {
-        const shouldContinue = await pollTaskStatus(taskId);
-        if (!shouldContinue) {
-          clearInterval(pollInterval);
-        }
-      }, 2000); // Poll every 2 seconds
-
-      return () => clearInterval(pollInterval);
-    }
-  }, [taskId, taskStatus, pollTaskStatus]);
-
   const handleNewSearch = (e) => {
     e.preventDefault();
     if (searchInput.trim() === "") return;
@@ -101,6 +190,11 @@ const DomainList = () => {
     sessionStorage.removeItem("cachedDomains");
     sessionStorage.removeItem("domainDescriptions");
     
+    // Close existing WebSocket
+    if (wsRef.current) {
+      wsRef.current.close();
+    }
+    
     // Reset all states
     setLoading(true);
     setDomainNames([]);
@@ -108,6 +202,8 @@ const DomainList = () => {
     setTaskId(null);
     setTaskStatus(null);
     setBackgroundError(null);
+    setConnectionStatus('disconnected');
+    setProgress({ processed: 0, total: 0, percentage: 0 });
     setVisibleDomains(6);
     
     fetchDomains(searchInput);
@@ -136,6 +232,7 @@ const DomainList = () => {
 
       setDomainNames(data.domains || []);
       setTaskId(data.task_id);
+      setProgress({ processed: 0, total: data.total_domains || 0, percentage: 0 });
       
       // Cache the domain names
       sessionStorage.setItem("cachedDomains", JSON.stringify({
@@ -145,10 +242,41 @@ const DomainList = () => {
         timestamp: Date.now()
       }));
 
-      // Start polling for background task status if task_id is available
+      // Connect to WebSocket for real-time updates
       if (data.task_id) {
-        setTaskStatus({ status: 'pending', progress: 0 });
-        await pollTaskStatus(data.task_id);
+        setTaskStatus({ 
+          status: 'pending', 
+          progress: 0, 
+          total_domains: data.total_domains || 0,
+          processed_domains: 0 
+        });
+        
+        // Try WebSocket first, fallback to polling
+        try {
+          connectWebSocket(data.task_id);
+          
+          // Start polling as backup if WebSocket doesn't connect within 3 seconds
+          setTimeout(() => {
+            if (connectionStatus !== 'connected') {
+              console.log('WebSocket not connected, falling back to polling');
+              const pollInterval = setInterval(async () => {
+                const shouldContinue = await pollTaskStatus(data.task_id);
+                if (!shouldContinue) {
+                  clearInterval(pollInterval);
+                }
+              }, 2000);
+            }
+          }, 3000);
+        } catch (error) {
+          console.error('WebSocket connection failed, using polling:', error);
+          // Fallback to polling immediately
+          const pollInterval = setInterval(async () => {
+            const shouldContinue = await pollTaskStatus(data.task_id);
+            if (!shouldContinue) {
+              clearInterval(pollInterval);
+            }
+          }, 2000);
+        }
       }
 
       setLoading(false);
@@ -168,8 +296,7 @@ const DomainList = () => {
     } else if (taskStatus?.status === 'failed' || backgroundError) {
       return 'failed';
     } else if (taskStatus?.status === 'completed') {
-      // Task completed but this specific domain might not have description
-      return domainDescriptions[domainName] ? 'completed' : 'failed';
+      return domainDescriptions[domainName] ? 'completed' : 'loading';
     } else {
       return 'pending';
     }
@@ -198,10 +325,21 @@ const DomainList = () => {
               const { taskId: descTaskId, descriptions } = JSON.parse(cachedDescriptions);
               if (descTaskId === cachedTaskId) {
                 setDomainDescriptions(descriptions);
-                setTaskStatus({ status: 'completed', progress: 100 });
+                setTaskStatus({ 
+                  status: 'completed', 
+                  progress: 100,
+                  total_domains: domains.length,
+                  processed_domains: Object.keys(descriptions).length
+                });
+                setProgress({
+                  processed: Object.keys(descriptions).length,
+                  total: domains.length,
+                  percentage: 100
+                });
               }
             } else {
-              // Try to fetch current task status
+              // Try to reconnect WebSocket or poll for current status
+              setTaskStatus({ status: 'pending', progress: 0 });
               pollTaskStatus(cachedTaskId);
             }
           }
@@ -211,7 +349,6 @@ const DomainList = () => {
         }
       } catch (error) {
         console.error("Error parsing cached data:", error);
-        // Clear corrupted cache
         sessionStorage.removeItem("cachedDomains");
         sessionStorage.removeItem("domainDescriptions");
       }
@@ -219,7 +356,7 @@ const DomainList = () => {
 
     // If no valid cache, fetch new domains
     fetchDomains(prompt);
-  }, [pollTaskStatus]);
+  }, []);
 
   if (loading) {
     return (
@@ -282,51 +419,56 @@ const DomainList = () => {
         </form>
       </div>
 
-      {/* Background Task Progress Indicator */}
-      {taskStatus && taskStatus.status !== 'completed' && (
+      {/* Real-time Progress Indicator */}
+      {taskStatus && (taskStatus.status === 'pending' || taskStatus.status === 'processing') && (
         <div className="task-progress-container">
           <div className="task-progress">
             <div className="progress-header">
-              <span className={`status-badge ${taskStatus.status}`}>
-                {taskStatus.status === 'pending' ? '⏳ Queued' : 
-                 taskStatus.status === 'processing' ? '🔄 Generating Descriptions' : 
-                 taskStatus.status === 'completed' ? '✅ Complete' : 
-                 '❌ Failed'}
-              </span>
+              <div className="status-section">
+                <span className={`status-badge ${taskStatus.status}`}>
+                  {taskStatus.status === 'pending' ? '⏳ Queued' : '🔄 Generating Descriptions'}
+                </span>
+                <div className="connection-indicator">
+                  <span className={`connection-status ${connectionStatus}`}>
+                    {connectionStatus === 'connected' ? '🟢 Live' : 
+                     connectionStatus === 'error' ? '🔴 Polling' : 
+                     '🟡 Connecting'}
+                  </span>
+                </div>
+              </div>
               <span className="progress-text">
-                {taskStatus.processed_domains || 0} of {taskStatus.total_domains || domainNames.length} descriptions ready
+                {progress.processed} of {progress.total} descriptions ready
               </span>
             </div>
+            
             <div className="progress-bar-container">
               <div 
                 className="progress-bar-fill" 
                 style={{ 
-                  width: `${taskStatus.progress || 0}%`,
-                  backgroundColor: taskStatus.status === 'failed' ? '#dc3545' : '#007bff'
+                  width: `${progress.percentage}%`,
+                  backgroundColor: taskStatus.status === 'failed' ? '#dc3545' : '#007bff',
+                  transition: 'width 0.5s ease-in-out'
                 }}
               />
             </div>
+            
             <div className="progress-info">
-              <small>Domain descriptions are being generated in the background. You can click on domains now - descriptions will appear automatically when ready!</small>
+              <small>
+                {connectionStatus === 'connected' 
+                  ? '🚀 Real-time updates enabled! Domain cards will update automatically as descriptions are ready.'
+                  : '📡 Checking for updates every few seconds. Domain descriptions will appear as they become available.'
+                }
+              </small>
             </div>
           </div>
         </div>
       )}
 
       {/* Success message when descriptions are complete */}
-      {taskStatus && taskStatus.status === 'completed' && (
+      {(taskStatus?.status === 'completed' || connectionStatus === 'completed') && (
         <div className="completion-notification">
           <div className="completion-message">
             ✨ All domain descriptions are ready! Click on any domain to see detailed insights.
-          </div>
-        </div>
-      )}
-
-      {/* Error notification */}
-      {backgroundError && (
-        <div className="error-notification">
-          <div className="error-message">
-            ⚠️ {backgroundError}. You can still view domains and generate descriptions individually.
           </div>
         </div>
       )}
@@ -336,6 +478,7 @@ const DomainList = () => {
           <h2>Found {domainNames.length} Domain Suggestions</h2>
           <p className="results-subtitle">
             Click on any domain to see detailed information and availability
+            {progress.processed > 0 && ` • ${progress.processed} descriptions ready`}
           </p>
         </div>
 
@@ -347,6 +490,7 @@ const DomainList = () => {
                 taskId={taskId}
                 backgroundDescription={domainDescriptions[name]}
                 descriptionStatus={getDescriptionStatus(name)}
+                isRealTimeUpdate={connectionStatus === 'connected'}
               />
             </div>
           ))}

@@ -43,7 +43,7 @@ def preprocess():
 def generate_domains(prompt: str) -> str:
     """Generate domain names using LLM"""
     instruction = (
-        "You are a domain name generator. Based on the user's prompt, generate only 10 creative, relevant, and unique domain name ideas "
+        "You are a domain name generator. Based on the user's prompt, generate only 15 creative, relevant, and unique domain name ideas "
         "WITHOUT any domain extensions like .com, .net, .io, etc. Just the names only. Present them in a numbered list."
         "Short Domain names are better, Do not combine more than two words for a domain name."
     )
@@ -56,10 +56,10 @@ def generate_domains(prompt: str) -> str:
     except Exception as e:
         print(f"Error generating domains: {str(e)}")
         # Return fallback domains
-        return "1. techstore\n2. shopnow\n3. bizmart\n4. quickbuy\n5. dealzone\n6. tradehub\n7. marketo\n8. sellfast\n9. buyeasy\n10. commerce"
+        return "1. techstore\n2. shopnow\n3. bizmart\n4. quickbuy\n5. dealzone\n6. tradehub\n7. marketo\n8. sellfast\n9. buyeasy\n10. commerce\n11. webpro\n12. digihub\n13. netzone\n14. onlinemart\n15. cybershop"
 
 def postprocessing(text: str) -> List[str]:
-    """Extract domain names from LLM response"""
+    """Extract domain names from LLM response - updated to handle up to 15 domains"""
     try:
         # Primary pattern: numbered list
         domain_names = re.findall(r'\d+\.\s+([a-zA-Z0-9]+)', text)
@@ -89,7 +89,7 @@ def postprocessing(text: str) -> List[str]:
             if 3 <= len(clean_domain) <= 20:
                 cleaned_domains.append(clean_domain)
         
-        return cleaned_domains[:10]  # Return max 10 domains
+        return cleaned_domains[:15]  # Return max 15 domains
         
     except Exception as e:
         print(f"Error in postprocessing: {str(e)}")
@@ -210,11 +210,12 @@ async def domain_details_async(domain_name: str, prompt: str) -> Dict:
 async def multi_description_async(
     prompt: str, 
     name_list: List[str], 
-    progress_callback: Optional[Callable[[int, int], None]] = None,
-    max_concurrent: int = 3
+    progress_callback: Optional[Callable[[int, int, Optional[Dict]], None]] = None,
+    max_concurrent: int = 5  # Increased concurrency for faster processing
 ) -> List[Dict]:
     """
-    Generate descriptions for multiple domain names using async processing with concurrency control
+    Generate descriptions for multiple domain names using async processing with real-time updates
+    Enhanced to call progress_callback with individual results as they complete
     """
     if not name_list:
         print("No domain names to process")
@@ -224,41 +225,61 @@ async def multi_description_async(
     
     results = []
     processed_count = 0
+    results_lock = asyncio.Lock()
     
     # Create semaphore to limit concurrent requests
     semaphore = asyncio.Semaphore(max_concurrent)
     
-    async def process_single_domain(domain_name: str) -> Dict:
+    async def process_single_domain(domain_name: str, index: int) -> Dict:
         nonlocal processed_count
         async with semaphore:
             try:
                 result = await domain_details_async(domain_name, prompt)
-                processed_count += 1
                 
-                # Call progress callback if provided
-                if progress_callback:
-                    progress_callback(processed_count, len(name_list))
+                async with results_lock:
+                    processed_count += 1
+                    
+                    # Call progress callback with the completed result
+                    if progress_callback:
+                        await asyncio.get_event_loop().run_in_executor(
+                            None, 
+                            progress_callback, 
+                            processed_count, 
+                            len(name_list), 
+                            result
+                        )
                 
                 print(f"Completed {processed_count}/{len(name_list)}: {domain_name}")
                 return result
                 
             except Exception as e:
                 print(f"Error processing {domain_name}: {str(e)}")
-                processed_count += 1
                 
-                if progress_callback:
-                    progress_callback(processed_count, len(name_list))
+                async with results_lock:
+                    processed_count += 1
                 
-                return {
+                fallback_result = {
                     "domainName": f"{domain_name}.lk",
                     "domainDescription": f"A domain name for {domain_name} related to: {prompt[:50]}...",
                     "relatedFields": ["Business", "Technology", "Innovation", "Digital Services"],
                     "error": str(e)
                 }
+                
+                # Call progress callback even for errors
+                if progress_callback:
+                    await asyncio.get_event_loop().run_in_executor(
+                        None, 
+                        progress_callback, 
+                        processed_count, 
+                        len(name_list), 
+                        fallback_result
+                    )
+                
+                return fallback_result
     
     try:
         # Process all domains concurrently with semaphore limiting
-        tasks = [process_single_domain(domain_name) for domain_name in name_list]
+        tasks = [process_single_domain(domain_name, i) for i, domain_name in enumerate(name_list)]
         results = await asyncio.gather(*tasks, return_exceptions=True)
         
         # Handle any exceptions in results
@@ -266,12 +287,13 @@ async def multi_description_async(
         for i, result in enumerate(results):
             if isinstance(result, Exception):
                 print(f"Exception for domain {name_list[i]}: {str(result)}")
-                final_results.append({
+                fallback_result = {
                     "domainName": f"{name_list[i]}.lk",
                     "domainDescription": f"A domain name for {name_list[i]} related to: {prompt[:50]}...",
                     "relatedFields": ["Business", "Technology", "Innovation", "Digital Services"],
                     "error": str(result)
-                })
+                }
+                final_results.append(fallback_result)
             else:
                 final_results.append(result)
         
@@ -283,12 +305,21 @@ async def multi_description_async(
         # Fallback: return basic results for all domains
         fallback_results = []
         for domain_name in name_list:
-            fallback_results.append({
+            fallback_result = {
                 "domainName": f"{domain_name}.lk",
                 "domainDescription": f"A domain name for {domain_name} related to: {prompt[:50]}...",
                 "relatedFields": ["Business", "Technology", "Innovation", "Digital Services"],
                 "error": f"Processing failed: {str(e)}"
-            })
+            }
+            fallback_results.append(fallback_result)
+            
+            # Call progress callback for each fallback result
+            if progress_callback:
+                try:
+                    progress_callback(len(fallback_results), len(name_list), fallback_result)
+                except Exception as callback_error:
+                    print(f"Error in progress callback: {callback_error}")
+        
         return fallback_results
 
 # Legacy function for backward compatibility
@@ -334,3 +365,40 @@ def health_check() -> bool:
     except Exception as e:
         print(f"Health check failed: {str(e)}")
         return False
+
+# Additional utility functions for real-time updates
+async def process_domains_with_streaming(
+    prompt: str, 
+    domain_names: List[str],
+    callback: Callable[[str, Dict], None]
+) -> List[Dict]:
+    """
+    Process domains with streaming results - calls callback for each completed domain
+    """
+    async def stream_callback(processed: int, total: int, latest_result: Dict = None):
+        if latest_result and callback:
+            domain_name = latest_result['domainName'].replace('.lk', '')
+            callback(domain_name, latest_result)
+    
+    return await multi_description_async(prompt, domain_names, stream_callback)
+
+def batch_process_domains(domain_names: List[str], prompt: str, batch_size: int = 3) -> List[Dict]:
+    """
+    Process domains in batches for memory efficiency
+    """
+    results = []
+    
+    for i in range(0, len(domain_names), batch_size):
+        batch = domain_names[i:i + batch_size]
+        print(f"Processing batch {i//batch_size + 1}: {batch}")
+        
+        # Process batch synchronously
+        batch_results = []
+        for domain_name in batch:
+            result = domain_details(domain_name, prompt)
+            batch_results.append(result)
+            time.sleep(0.1)  # Small delay to prevent rate limiting
+        
+        results.extend(batch_results)
+    
+    return results

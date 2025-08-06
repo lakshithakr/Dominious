@@ -12,6 +12,9 @@ from symspellpy import SymSpell
 # Global dictionary to store background task results with enhanced structure
 background_results: Dict[str, Dict] = {}
 
+# Global dictionary to store individual domain descriptions as they complete
+domain_cache: Dict[str, Dict] = {}
+
 app = FastAPI()
 
 origins = ["http://localhost:3000"]  # Adjust if your frontend is hosted elsewhere
@@ -41,7 +44,7 @@ class TaskStatus(BaseModel):
     processed_domains: int = 0
 
 async def background_domain_details_task(task_id: str, prompt: str, domain_names: List[str]):
-    """Enhanced background task to generate domain details with progress tracking"""
+    """Enhanced background task to generate domain details with real-time caching"""
     try:
         print(f"Starting background task {task_id} for {len(domain_names)} domains")
         
@@ -53,11 +56,31 @@ async def background_domain_details_task(task_id: str, prompt: str, domain_names
             "processed_domains": 0
         })
         
-        # Generate domain details using async implementation
+        # Generate domain details using async implementation with real-time callback
+        async def real_time_callback(processed: int, total: int, latest_result: Dict = None):
+            """Callback that caches individual results as they complete"""
+            # Update overall progress
+            progress = int((processed / total) * 100) if total > 0 else 0
+            background_results[task_id].update({
+                "progress": progress,
+                "processed_domains": processed
+            })
+            
+            # Cache the latest completed domain description
+            if latest_result:
+                domain_key = f"{task_id}_{latest_result['domainName'].replace('.lk', '')}"
+                domain_cache[domain_key] = {
+                    "result": latest_result,
+                    "timestamp": datetime.now().isoformat(),
+                    "task_id": task_id
+                }
+                print(f"Cached description for {latest_result['domainName']}")
+        
+        # Generate domain details with real-time caching
         domain_details_list = await multi_description_async(
             prompt, 
-            domain_names, 
-            progress_callback=lambda processed, total: update_task_progress(task_id, processed, total)
+            domain_names,
+            progress_callback=real_time_callback
         )
         
         # Update final results
@@ -81,15 +104,6 @@ async def background_domain_details_task(task_id: str, prompt: str, domain_names
             "completed_at": datetime.now().isoformat()
         })
 
-def update_task_progress(task_id: str, processed: int, total: int):
-    """Update task progress"""
-    if task_id in background_results:
-        progress = int((processed / total) * 100) if total > 0 else 0
-        background_results[task_id].update({
-            "progress": progress,
-            "processed_domains": processed
-        })
-
 @app.post("/generate-domains/")
 async def generate_domains_endpoint(prompt: Prompt, background_tasks: BackgroundTasks):
     try:
@@ -105,7 +119,7 @@ async def generate_domains_endpoint(prompt: Prompt, background_tasks: Background
         sentence_suggestions = sym_spell.lookup_compound(
             prompt.prompt, 
             max_edit_distance=2,
-            transfer_casing=True  # Preserves original capitalization
+            transfer_casing=True
         )
 
         if sentence_suggestions:
@@ -204,7 +218,6 @@ async def get_domain_details(task_id: str):
     result = background_results[task_id]
     
     if result["status"] == "completed":
-        # Return data but keep in memory for potential re-requests
         return {
             "status": "completed",
             "task_id": task_id,
@@ -228,13 +241,71 @@ async def get_domain_details(task_id: str):
             "total_domains": result.get("total_domains", 0)
         }
 
+@app.get("/domain-description/{task_id}/{domain_name}")
+async def get_single_domain_description(task_id: str, domain_name: str):
+    """Get description for a specific domain if it's been generated"""
+    domain_key = f"{task_id}_{domain_name}"
+    
+    if domain_key in domain_cache:
+        cached_data = domain_cache[domain_key]
+        return {
+            "status": "completed",
+            "domain_description": cached_data["result"],
+            "generated_at": cached_data["timestamp"]
+        }
+    
+    # Check if task exists and get current status
+    if task_id in background_results:
+        task_result = background_results[task_id]
+        if task_result["status"] == "completed" and task_result["data"]:
+            # Look for the domain in completed data
+            for domain_detail in task_result["data"]:
+                if domain_detail["domainName"].replace(".lk", "") == domain_name:
+                    return {
+                        "status": "completed",
+                        "domain_description": domain_detail
+                    }
+        
+        return {
+            "status": task_result["status"],
+            "message": f"Description for {domain_name} is {task_result['status']}"
+        }
+    
+    return {
+        "status": "not_found",
+        "message": "Task or domain not found"
+    }
+
+@app.get("/available-descriptions/{task_id}")
+async def get_available_descriptions(task_id: str):
+    """Get all currently available descriptions for a task"""
+    available_descriptions = {}
+    
+    # Check domain cache for this task
+    for key, cached_data in domain_cache.items():
+        if cached_data["task_id"] == task_id:
+            domain_name = key.replace(f"{task_id}_", "")
+            available_descriptions[domain_name] = cached_data["result"]
+    
+    return {
+        "task_id": task_id,
+        "available_descriptions": available_descriptions,
+        "count": len(available_descriptions)
+    }
+
 @app.delete("/task/{task_id}")
 async def cleanup_task(task_id: str):
     """Clean up a completed task from memory"""
+    # Clean up main task data
     if task_id in background_results:
         del background_results[task_id]
-        return {"message": f"Task {task_id} cleaned up successfully"}
-    return {"error": "Task not found"}
+    
+    # Clean up cached domain descriptions for this task
+    keys_to_remove = [key for key in domain_cache.keys() if key.startswith(f"{task_id}_")]
+    for key in keys_to_remove:
+        del domain_cache[key]
+    
+    return {"message": f"Task {task_id} and associated data cleaned up successfully"}
 
 @app.get("/active-tasks")
 async def get_active_tasks():
@@ -268,10 +339,11 @@ async def get_single_domain_details(request: DetailRequest):
 async def root():
     return {
         "message": "Domain Generator API",
-        "version": "2.0",
+        "version": "2.1",
         "features": [
             "Domain name generation",
             "Background description processing",
+            "Real-time description updates",
             "Progress tracking",
             "Error handling"
         ]

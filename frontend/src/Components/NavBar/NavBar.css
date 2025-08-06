@@ -14,6 +14,16 @@
     margin-left: 20px;
 }
 
+.navbar-brand a {
+    color: white;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.navbar-brand a:hover {
+    color: #ffb6c1; /* Light pink on hover */
+}
+
 .navbar-links {
     list-style: none;
     display: flex;
