@@ -1,20 +1,52 @@
-import React from "react";
+import React, { useState } from "react";
 import "./DomainCard.css";
-import { useNavigate } from "react-router-dom";
 
-const DomainCard = ({ domainName }) => {
-  const navigate = useNavigate();
+const DomainCard = ({ domainName, description, isLoading }) => {
+  const [showDescription, setShowDescription] = useState(false);
 
-  const handleClick = () => {
-    sessionStorage.setItem("selectedDomain", domainName);
-    navigate("/details");
-  };
+  const shortNote = description?.shortNote || "Tap to view more details";
 
   return (
-    <div className="card border-dark domain-card" onClick={handleClick}>
-      <div className="card-body d-flex justify-content-between align-items-center">
-        <h5 className="card-title">{domainName}</h5>
-        <button className="btn btn-success btn-sm">Domain Available</button>
+    <div 
+      className={`domain-card ${showDescription ? "expanded" : ""}`}
+      onClick={() => setShowDescription(!showDescription)}
+    >
+      <div className="domain-header">
+        <h5 className="domain-title">{domainName}.lk</h5>
+        <span className="badge-availability">Available</span>
+      </div>
+
+      {/* Short Note Preview */}
+      <p className="domain-note">{shortNote}</p>
+      
+      {/* Expandable Section */}
+      <div className={`domain-description ${showDescription ? "open" : ""}`}>
+        {isLoading ? (
+          <div className="loading-spinner">
+            <div className="spinner-border spinner-border-sm text-primary" role="status">
+              <span className="visually-hidden">Loading...</span>
+            </div>
+            <span className="loading-text">Loading description...</span>
+          </div>
+        ) : description ? (
+          <>
+            <p className="description-text">{description.domainDescription}</p>
+            {description.relatedFields?.length > 0 && (
+              <div className="related-fields">
+                <strong className="related-title">Related Fields:</strong>
+                <div className="fields-list">
+                  {description.relatedFields.map((field, i) => (
+                    <span key={i} className="field-badge">
+                      {field}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
+        ) : (
+          <p className="description-text muted">Description not available</p>
+        )}
       </div>
     </div>
   );

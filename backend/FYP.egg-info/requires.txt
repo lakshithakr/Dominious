@@ -7,3 +7,7 @@ langchain_community
 langchain_openai
 pinecone
 langchain-pinecone
+pymongo
+dnspython
+pydantic[email]
+pytz

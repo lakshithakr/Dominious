@@ -1,12 +1,14 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import DomainCard from "../DomainCard/DomainCard";
 import "./DomainList.css";
 import { useNavigate } from "react-router-dom";
 
 const DomainList = () => {
   const [domainNames, setDomainNames] = useState([]);
+  const [domainDescriptions, setDomainDescriptions] = useState({});
   const [visibleDomains, setVisibleDomains] = useState(6);
   const [loading, setLoading] = useState(true);
+  const [descriptionLoading, setDescriptionLoading] = useState(false);
   const [searchInput, setSearchInput] = useState("");
   const [feedbackRating, setFeedbackRating] = useState(1);
   const [feedbackName, setFeedbackName] = useState("");
@@ -16,22 +18,43 @@ const DomainList = () => {
 
   const navigate = useNavigate();
 
-  const handleLoadMore = () => {
-    setVisibleDomains((prev) => prev + 6);
-  };
+  const preloadDescriptions = useCallback(async (domains, prompt) => {
+    if (!prompt || domains.length === 0) return;
+    
+    setDescriptionLoading(true);
+    try {
+      const response = await fetch("http://localhost:8001/details/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          prompt,
+          domain_name: domains
+        }),
+      });
 
-  const handleNewSearch = (e) => {
-    e.preventDefault();
-    if (searchInput.trim() === "") return;
-
-    sessionStorage.setItem("userPrompt", searchInput);
-    sessionStorage.removeItem("cachedDomains");
-    setLoading(true);
-    fetchDomains(searchInput);
-  };
+      const data = await response.json();
+      if (data.descriptions) {
+        const newDescriptions = {};
+        data.descriptions.forEach(desc => {
+          if (desc && desc.domainName) {
+            const name = desc.domainName.replace('.lk', '');
+            newDescriptions[name] = desc;
+          }
+        });
+        setDomainDescriptions(prev => ({ ...prev, ...newDescriptions }));
+      }
+    } catch (error) {
+      console.error("Error preloading descriptions:", error);
+    } finally {
+      setDescriptionLoading(false);
+    }
+  }, []);
 
   const fetchDomains = async (prompt) => {
     try {
+      setLoading(true);
       const response = await fetch("http://localhost:8001/generate-domains/", {
         method: "POST",
         headers: {
@@ -47,9 +70,12 @@ const DomainList = () => {
         domains: data.domains,
         timestamp: Date.now()
       }));
-      setLoading(false);
+      
+      // Preload descriptions for initial visible domains
+      preloadDescriptions(data.domains.slice(0, visibleDomains), prompt);
     } catch (error) {
       console.error("Error fetching domains:", error);
+    } finally {
       setLoading(false);
     }
   };
@@ -64,6 +90,7 @@ const DomainList = () => {
       if (cachedPrompt === prompt) {
         setDomainNames(domains);
         setLoading(false);
+        preloadDescriptions(domains.slice(0, visibleDomains), prompt);
         return;
       }
     }
@@ -71,9 +98,29 @@ const DomainList = () => {
     fetchDomains(prompt);
   }, []);
 
+  const handleLoadMore = () => {
+    const newVisibleCount = visibleDomains + 6;
+    setVisibleDomains(newVisibleCount);
+    
+    // Preload descriptions for newly visible domains
+    const newDomains = domainNames.slice(visibleDomains, newVisibleCount);
+    const prompt = sessionStorage.getItem("userPrompt") || "default";
+    preloadDescriptions(newDomains, prompt);
+  };
+
+  const handleNewSearch = (e) => {
+    e.preventDefault();
+    if (searchInput.trim() === "") return;
+
+    sessionStorage.setItem("userPrompt", searchInput);
+    sessionStorage.removeItem("cachedDomains");
+    setDomainDescriptions({});
+    setLoading(true);
+    fetchDomains(searchInput);
+  };
+
   const handleFeedbackSubmit = async (e) => {
     e.preventDefault();
-
     const feedbackData = {
       rating: feedbackRating,
       name: feedbackName || null,
@@ -93,7 +140,7 @@ const DomainList = () => {
       const result = await res.json();
       if (res.ok) {
         setFeedbackStatus("Feedback submitted successfully!");
-        setFeedbackRating(0);
+        setFeedbackRating(1);
         setFeedbackName("");
         setFeedbackEmail("");
         setFeedbackComment("");
@@ -110,7 +157,7 @@ const DomainList = () => {
     return (
       <div className="loading-container">
         <div className="spinner"></div>
-        <p className="loading-text">Fetching domain Names...</p>
+        <p className="loading-text">Fetching domain names...</p>
       </div>
     );
   }
@@ -136,7 +183,11 @@ const DomainList = () => {
         <div className="row justify-content-around">
           {domainNames.slice(0, visibleDomains).map((name, index) => (
             <div className="item col-lg-6 col-md-6 col-sm-12" key={index}>
-              <DomainCard domainName={name} />
+              <DomainCard 
+                domainName={name} 
+                description={domainDescriptions[name]}
+                isLoading={!domainDescriptions[name] && descriptionLoading}
+              />
             </div>
           ))}
         </div>
@@ -150,7 +201,6 @@ const DomainList = () => {
         )}
       </div>
 
-      {/* Feedback Section */}
       <div className="feedback-section mt-5 p-4 border rounded bg-light">
         <h4 className="text-center mb-3">Share Your Feedback</h4>
         <form onSubmit={handleFeedbackSubmit} className="feedback-form">

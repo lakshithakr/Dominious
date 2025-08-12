@@ -51,6 +51,65 @@ with open("names.txt", "r") as file:
     retrived_domain_names_list = [line.strip() for line in file]
 domain_name_set = set(retrived_domain_names_list)
 
+def get_adjusted_first_syllable(word):
+    """Split a word into syllables and return the adjusted first syllable."""
+    word = word.lower()
+    pattern = r'[^aeiouy]*[aeiouy]+(?:[^aeiouy]*$|[^aeiouy](?=[^aeiouy]))?'
+    syllables = re.findall(pattern, word)
+    if not syllables:
+        return word
+    if len(syllables) == 1:
+        return syllables[0]
+    
+    first, next_syl = syllables[0], syllables[1]
+    vowels = "aeiouy"
+
+    if len(first) > 2:
+        if next_syl[0] in vowels or next_syl[0] == first[-1]:
+            first += next_syl[0]
+    else:
+        if first[-1] == next_syl[0]:
+            first += next_syl[0]
+        else:
+            for ch in next_syl:
+                first += ch
+                if ch in vowels:
+                    break
+    return first
+
+def extend_domain_names(domain_list, max_part_len=6, min_domain_len=9):
+    """
+    Extend domain names:
+    - Only create a shortened variant if the full name > min_domain_len
+      AND any part > max_part_len.
+    - Shorten long parts using get_adjusted_first_syllable.
+    - Keep original names and add new ones.
+    - Sort the final list by length.
+    """
+    extended = domain_list.copy()
+    for name in domain_list:
+        parts = re.findall(r'[A-Z]?[a-z]+', name)
+        if len(parts)>1:
+            # Check conditions: full name length & long part
+            if len(name) <= min_domain_len or not any(len(p) > max_part_len for p in parts):
+                continue  # Skip adding shortened variant
+
+            new_parts = []
+            for part in parts:
+                if len(part) > max_part_len:
+                    new_parts.append(get_adjusted_first_syllable(part))
+                else:
+                    new_parts.append(part.lower())
+            new_name = "".join(p.capitalize() for p in new_parts)
+            if new_name not in extended:
+                extended.append(new_name)
+
+    # Sort by length (shortest to longest)
+    extended.sort(key=len)
+    print(extended)
+    return extended
+
+
 def RAG(user_query):
     results = vector_store.similarity_search(query=user_query,k=20)
     categories = []
@@ -115,7 +174,7 @@ def final_domains():
 
 import ast
 
-def domain_details(domain_name: str, prompt: str):
+async def domain_details(domain_name: str, prompt: str):
     template = f"""
 You are a branding and domain expert.Generate a Python dictionary in the following format. The description should 50-100 words and it should describe how domain name suitable for the user requirements:
 
@@ -129,21 +188,27 @@ Domain name: {domain_name}
 Prompt: {prompt}
 """
     
-    response_text = llm.invoke(template)  # ✅ use .invoke() instead of calling directly
-
-    #print(type(response_text))  # should be <class 'str'> if it’s a string
-
     try:
+        # Use the correct async method based on your LLM client
+        if hasattr(llm, 'ainvoke'):
+            response = await llm.ainvoke(template)
+        elif hasattr(llm, 'apredict'):
+            response = await llm.apredict(template)
+        else:
+            # Fallback to synchronous if async not available
+            response = llm.invoke(template)
+        
+        # Handle both string and object responses
+        response_text = response if isinstance(response, str) else str(response)
         result = ast.literal_eval(response_text)
+        print(result)
+        return result
     except Exception as e:
-        result = {
+        return {
             "domainName": f"{domain_name}.lk",
-            "domainDescription": "Failed to parse response from LLM.",
-            "relatedFields": [],
-            "error": str(e)
+            "domainDescription": f"Failed to generate description: {str(e)}",
+            "relatedFields": []
         }
-    print(result)
-    return result  # ✅ This is a dict now
 
 
 def gemma(user_description: str, sample_domains: str) -> str:
